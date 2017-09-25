@@ -45,7 +45,7 @@ require_once('controller.php');
 <head>
     <meta charset="UTF-8" />
     <title><?=$pageTitle?></title>
-    <link rel="shortcut icon" href="https://app.schoology.com/sites/all/themes/schoology_theme/favicon.ico" type="image/x-icon" />
+    <link rel="shortcut icon" href="favicon.ico" type="image/x-icon" />
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -58,7 +58,7 @@ require_once('controller.php');
     <?
     $action = strtolower($action);
     switch($action) {
-		case 'pictures':
+        case 'pictures':
         case 'groups':
         case 'members':
         case 'list'
@@ -75,12 +75,12 @@ require_once('controller.php');
             </tr>
             <?
             foreach ($users as $user) { 
-				$filter = 'none';
-				if (isset($group))
-					$filter = $user->group == $group;
+                $filter = 'none';
+                if (isset($group))
+                    $filter = $user->group == $group;
                 if ($filter==true or $filter=='none') { ?>
                 <tr>
-					<?if ($action=='pictures' or $action=='groups'){ ?>
+                    <?if ($action=='pictures' or $action=='groups'){ ?>
                     <td><img src="<?=$user->info->picture_url?>" width="80" /></td>
                     <?}?>
                     <td><?=$user->group?></td>
