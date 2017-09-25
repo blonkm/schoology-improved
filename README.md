@@ -1,4 +1,4 @@
-#Schoology-improved
+# Schoology-improved
 Using the Schoology API to do things you can't using the web version
 
 Schoology is a powerful Electronic Learning Environment. It helps you to manage materials, students, courses, etc. Still, some functionality is lacking.
@@ -7,7 +7,7 @@ The Schoology SDK uses PHP to access Schoology objects. The Schoology Support si
 
 This project aims to solve these problems.
 
-##How to use the classes
+## How to use the classes
 
 ### Configuration
 You should start by copying all files to your server. Then, in config.php, modify these lines: 
