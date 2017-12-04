@@ -25,19 +25,20 @@ The basic functionality is in a class called 'Course'. You will be able to retri
 You will need a server capable of running PHP. It will also need ZipArchive enabled, which is available as of PHP 5.2.0
 
 ### Step 1: setup folders
-- Download the schoology_sdk from GitHub
-- Download the files from this project
+- Download the files from this project (schoology sdk is included)
 - Upload the files to a folder on your web server
 - Make sure there is write access to this folder from within PHP (on linux: chmod 755 <foldername>)
 
 ### Configuration
-You should start by copying all files to your server. Then, in config.php, modify these lines: 
+You should start by copying all files to your server. Then, in the config directory create two files:
 
 ```
-    const API_KEY = 'YOUR API KEY';
-    const API_SECRET = 'YOUR API SECRET';
+    .api_key
+    .api_secret
 ```
-Note: there is a method named 'toLongId' which is specific for the school this was made for originally. It should not do anything when usernames are different.
+In these files put your key and secret resepectively. Just the string, nothing else. The files may be hidden from view, so make sure to enable view hidden files (e.g. in FTP or SCP program).
+
+Note: there is a method in helpers.php named 'formatId' which is specific for the school this was made for originally. You may need to change this function.
 
 ### Prepare import
 The import of groups is done by setting up a PHP array in ``groups_import.php````. This is only temporary, the aim is to import directly from a csv file. Ideally a schoology formatted export file can be used.
