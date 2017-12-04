@@ -1,0 +1,172 @@
+body {
+    font: .76em arial;
+    margin: 1em;
+}
+
+h1,h2,h3 {
+    font-size: 1.2em;
+    color: teal
+}
+
+h1 {
+    font-size: 1.6em
+}
+
+td, th {
+    border: 1px solid silver;
+    padding: .4em;
+}
+
+table {
+    border-collapse: collapse;
+}
+
+tr:nth-child(odd) {
+    background-color: #e2f7f7;
+}
+
+p {
+    font-size: 1em;
+}
+
+a {
+    color: #4479B3;
+    text-decoration:none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+#admin p {
+    font-size: 1.2em
+}
+
+#matrix th {
+    max-width : 50px;
+    white-space : nowrap;
+    overflow : hidden;
+}
+
+#matrix th:hover {
+    max-width : initial;
+}
+
+#matrix td a {
+    display: block;
+    height: 100%;
+    width: 100%;
+    text-indent: -9999px;
+}
+
+#matrix td a:hover {
+    background-color: lightblue;
+}
+
+.numeric {
+    text-align: right;
+}
+
+header {
+    margin: 0;
+    padding: 0;
+    height: 42px;
+    width: 100%;
+    min-width: 980px;
+    position: relative;
+    z-index: 11;
+    border-bottom: 1px solid #22303e;
+    background: #44505d url('https://cdn3-5.cdn.schoology.com/sites/all/themes/schoology_theme/images/header-home.png?7246') no-repeat 10px 10px;
+}
+
+#course-logo {
+    float: left;
+    margin: 0 1em 1em 0
+}
+
+#assignment-title, #user-title {
+    clear: both;
+}
+
+.source {
+    font-family: consolas;
+    line-height: 1.5;
+    background: #ccc;
+}
+
+
+/* flexbox */
+section div {
+  display: flex;
+  flex-direction: column;
+  justify-content: left;
+  padding: 1em;
+}
+
+.container {
+  display: flex;
+  clear: both;
+}
+
+nav a:hover {
+  text-decoration:none;
+}
+
+nav .button {
+  margin-bottom:.2em;
+}
+
+code {
+  font-size: 1.5em;
+  background: silver;
+  font-weight: bold;
+  color: #333;
+  padding: 1em;
+  line-height: 1.5;
+}
+
+/* upload button 
+ *  @link http://codepen.io/adambene/pen/xRWrXN
+ */
+.upload-btn-wrapper {
+  position: relative;
+  overflow: hidden;
+  display: inline-block;
+}
+
+.btn {
+  border: 2px solid gray;
+  color: gray;
+  background-color: white;
+  padding: 8px 20px;
+  border-radius: 8px;
+  font-size: 20px;
+  font-weight: bold;
+}
+
+.upload-btn-wrapper input[type=file] {
+  font-size: 1em;
+  position: absolute;
+  left: 0;
+  top: 0;
+  opacity: 0;
+  width:155px;
+  height:55px;
+  cursor: pointer;
+}
+
+.filename {
+  border: 2px solid darkgreen;
+  color: white;
+  background-color: darkgray;
+  padding: 8px 20px;
+  border-radius: 8px;
+  font-size: 20px;
+  font-weight: bold;
+}
+
+.fa-comment {
+  color: #88AED6;
+}
+
+select {font-size:.9em; }

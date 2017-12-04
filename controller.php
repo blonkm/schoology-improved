@@ -41,23 +41,25 @@ switch (strtolower($action)) {
         break;
     case 'matrix':
         $pageTitle = "Assignments of section " . $sectionInfo->section_title;
-        $groups = $course->listGradingGroups($section);
-        $assignments = $course->getSectionAssignments($section);
+        $groups = $course->listGradingGroups($section);        
+        ksort($groups);
+        $assignments = $course->getSectionAssignments($section, $status, $category);
+        asort($assignments);
         break;
     case 'user':
-        $assignments = $course->getSectionAssignments($section);
+        $assignments = $course->getSectionAssignments($section, Course::STATUS_ALL);
         $member = $course->getUserInfo($userid);
         $first = $member->name_first;
         $last = $member->name_last;
         $id = $member->id;
-        $schoolId = $course->toLongId($member->school_uid);
+        $schoolId = formatId($member->school_uid);
         $pageTitle = "Assignments for user " . strtoupper($member->username) . " in course " . $sectionInfo->section_title;
         $files = $course->listFilesOfUser($section, $member);        
         break;
     case 'files':
         $pageTitle = "Submissions for " . $group . " in section " . $sectionInfo->section_title;
         $files = $course->listFilesOfGroupMembers($section, $group, $assignment);
-        $assignments = $course->getSectionAssignments($section);
+        $assignments = $course->getSectionAssignments($section, Course::STATUS_ALL);
         break;
     case 'create':
         $pageTitle = "Creating groups for section " . $sectionInfo->section_title;
@@ -71,19 +73,19 @@ switch (strtolower($action)) {
     case 'download':
         $pageTitle = "Downloading submissions of assignment " . $assignment;
         $files = $course->listFilesOfGroupMembers($section, $group, $assignment);
-        $assignments = $course->getSectionAssignments($section);
+        $assignments = $course->getSectionAssignments($section, Course::STATUS_ALL);
         $course->saveAttachments($files, $assignments[$assignment]);
         $filesSaved = true;       
         if ($course->download($section, null, $assignments[$assignment], $group))
             die(); // no more response, we're downloading a zip file            
         break;
     case 'portfolio':
-        $assignments = $course->getSectionAssignments($section);
+        $assignments = $course->getSectionAssignments($section, Course::STATUS_ALL);
         $member = $course->getUserInfo($userid);
         $first = $member->name_first;
         $last = $member->name_last;
         $id = $member->id;
-        $schoolId = $course->toLongId($member->school_uid);
+        $schoolId = $formatId($member->school_uid);
         $files = $course->listFilesOfUser($section, $member);        
         $pageTitle = "Downloading submissions for user " . strtoupper($member->username) . " in course " . $sectionInfo->section_title;
         $course->savePortfolio($files, $member, $assignments);
@@ -117,6 +119,14 @@ switch (strtolower($action)) {
         }
         die();
         break;  
+    case 'clean':
+        $course->purgeDownloads();
+        break;
+	case 'upload':
+		$data = $course->uploadMembersCsv();
+		//dump($csv);
+		$import = $course->importCsv($section, $data);
+		break;
     default:
         // nothing here
 }

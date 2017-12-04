@@ -1,17 +1,50 @@
 <?
 /** 
- *  schoology API calls to make groups
+ *  Schoology API calls to make groups
  *  or query groups and group members
+ *  @author Michiel van der Blonk (blonkm@gmail.com)
+ *  @date 2017-11-24
  */
-class Course {
 
-    const API_KEY = 'YOUR API KEY HERE'; //enter your API key here
-    const API_SECRET = 'YOUR API SECRET HERE'; //enter your API key here
+class Course {
     const API_BASE = 'https://api.schoology.com/v1';
+    const WEB_BASE = 'https://www.schoology.com';
     const MAX_ASSIGNMENTS = 400; // arbitrary to limit download time
+    const DATE_FORMAT = 'D Y-M-d h:m'; // Mon 2017-nov-20 8:50
+    const STATUS_TEXT = ['View the item', 'Make a submission', 'Score at least'];
+    const STATUS_VIEW_THE_ITEM = 0;
+    const STATUS_MAKE_A_SUBMISSION = 1;
+    const STATUS_SCORE_AT_LEAST = 2;
+    const STATUS_ALL = 3;
+    
+    private static $API_KEY;
+    private static $API_SECRET;
     
     private $_app;
-    private $_errors;
+    private $_errors = [];
+    private $_apiCallCount = 0;
+    private $_cache;
+    private $_timer;
+    
+    function __construct() {
+      $this->_timer = new Timer(true);
+      $this->_timer->setThrottleRate(50); // allow no more than 50 api calls per second
+      $FS = new Filesystem;
+      self::$API_KEY = $FS->read('./config/.api_key'); 
+      self::$API_SECRET = $FS->read('./config/.api_secret'); 
+    }
+    
+    function getStatusAsText($status) {
+      $statusAsText = ['Must view the item', 'Must make a submission', 'Must score at least'];
+      switch(intval($status)) {
+        case self::STATUS_VIEW_THE_ITEM: 
+        case self::STATUS_MAKE_A_SUBMISSION:
+        case self::STATUS_SCORE_AT_LEAST:
+          return $statusAsText[intval($status)];
+        default:
+          return '';
+      }
+    }
     
     /** singleton for the Schoology app object
      *  created and logged in, ready to fire off calls
@@ -21,23 +54,67 @@ class Course {
             return $this->_app;
 
         // Replace these values with your application's consumer key and secret
-        $consumer_key = self::API_KEY;
-        $consumer_secret = self::API_SECRET;
-        // Initialize the Schoology class
+        $consumer_key = self::$API_KEY;
+        $consumer_secret = self::$API_SECRET;
+
         $schoology = new SchoologyApi($consumer_key, $consumer_secret, '', '','', TRUE);
-
-        // Initialize session handling
-        session_start();
-
-        // Read the incoming login information.
         $login = $schoology->validateLogin();
-
         $this->_errors=[];
         $this->_app = $schoology;
-
         return $schoology;
     }
 
+    function cache() {
+      if (!empty($this->_cache))
+          return $this->_cache;
+      $this->_cache = new Cache;
+      return $this->_cache;
+    }
+
+    function disableCache() {
+      $cache = $this->cache();
+      $cache->disable();
+    }
+    
+    function enableCache() {
+      $cache = $this->cache();
+      $cache->enable();
+    }
+
+    function setCache($active) {
+      if ($active)
+        $this->enableCache();
+      else
+        $this->disableCache();
+    }
+    
+    function apiCounter() {
+      return $this->_apiCallCount;
+    }
+    
+    function getResource($url) {
+      $cache = $this->cache();
+      return $cache->fetch($url);
+    }
+    
+    function saveResource($url, $resource, $expires) {
+      $cache = $this->cache();
+      return $cache->store($url, $resource, $expires);
+    }
+    
+    function api($url, $expires='+1 year', $method='GET') {
+      $resource = $this->getResource($url);
+      if (!$resource) {
+        $schoology = $this->app();
+        $this->_timer->throttle();
+        $resource = $schoology->api($url, $method);
+        $this->_timer->setStartTime();
+        $this->_apiCallCount++;
+        $this->saveResource($url, $resource, $expires);
+      }   
+      return $resource;
+    }
+    
     /* add another error to the list */
     function addError($message) {       
         $this->_errors[] = $message;
@@ -49,37 +126,17 @@ class Course {
             echo '<p class="error">' . $message . '</p>';
     }
 
-    /* specific for EPI, Aruba
-    * convert short id to long id T15-0001
-    * @param shortId an ID like T15001 to be converted
-    * returns a long id with '-' and '0' like T15-0001
-    */
-    function toLongId($shortId) {
-        return substr($shortId,0,3) . "-0" . substr($shortId, -3);
-    }
-
-    function removeBase($url) {
-        return str_replace(self::API_BASE, '', $url);
-    }
-
-    function mkdir($folder) {
-        if (!is_dir($folder)) {
-            mkdir($folder, 0755, true);
-        }
-    }
-
     /** 
      *  Get course section Info
      *  @param sectionId
-     *  @returns the course object
+     *  @returns the course objectxx
      */    
     function getSectionInfo($sectionId) {
-        $schoology = $this->app();
         $url = 'sections/{id}';
         $url = str_replace('{id}', $sectionId, $url);
 
         // do the call
-        $response = $schoology->api($url, 'GET');
+        $response = $this->api($url);
         $sectionInfo = $response->result;
 
         return $sectionInfo;    
@@ -87,21 +144,23 @@ class Course {
     
     /** 
      *  Get list of section assignments
-     *  for a maximum of 400 assignments
+     *  for a maximum of MAX_ASSIGNMENTS (initially 400) assignments
      *  @param sectionId
      *  @returns array of assignments for the section
      */    
-    function getSectionAssignments($sectionId) {
-        $schoology = $this->app();
+    function getSectionAssignments($sectionId, $completionStatus=self::STATUS_MAKE_A_SUBMISSION, $category=null) {
+        $statusAsText = $this->getStatusAsText($completionStatus);
         $url = 'sections/{section_id}/assignments?limit=' . self::MAX_ASSIGNMENTS;
         $url = str_replace('{section_id}', $sectionId, $url);
 
         // do the call
-        $response = $schoology->api($url, 'GET');
+        $response = $this->api($url);
         $result = $response->result;
         $assignments = [];
         foreach ($result->assignment as $assignment) {
-            if ($assignment->completion_status == "Must make a submission") {
+          $isSelectedStatus = $assignment->completion_status == $statusAsText || $completionStatus==self::STATUS_ALL;
+          $isSelectedCategory = $assignment->grading_category == $category || is_null($category);
+            if ($isSelectedStatus && $isSelectedCategory) {
                 $assignments[$assignment->id] = $assignment->title;
             }
         }
@@ -114,12 +173,11 @@ class Course {
      *  @returns the user object
      */    
     function getUserInfo($userId) {
-        $schoology = $this->app();
         $url = 'users/{id}';
         $url = str_replace('{id}', $userId, $url);
 
         // do the call
-        $response = $schoology->api($url, 'GET');
+        $response = $this->api($url);
         $userInfo = $response->result;
         return $userInfo;    
     }
@@ -162,7 +220,7 @@ class Course {
                     $first = $userInfo->name_first;
                     $last = $userInfo->name_last;
                     $id = $userInfo->id;
-                    $schoolId = $this->toLongId($userInfo->school_uid);
+                    $schoolId = formatId($userInfo->school_uid);
                     $this->addError("user not found: $first $last ( $id - $schoolId)<br/>");
                 }
             }
@@ -182,10 +240,9 @@ class Course {
         foreach ($members as $key=>$memberList) {
             $groups[] = (object) ['title'=>$key, 'members'=> $members[$key]];
         }
-
         return $groups;
     }
-
+  
     // get enrollment data as complete object for the members in a section
     function getMemberObjects($sectionId) {
         return $this->listMembers($sectionId, true);
@@ -193,12 +250,11 @@ class Course {
     
     // get enrollment data as single id for the members in a section
     function listMembers($sectionId, $asObject = false) {
-        $schoology = $this->app();
         $url = 'sections/{section_id}/enrollments?enrollment_status=1&limit=400';
         $url = str_replace('{section_id}', $sectionId, $url);
 
         // do the call
-        $response = $schoology->api($url, 'GET');
+        $response = $this->api($url);
         $members = $response->result;
         foreach($members->enrollment as $enrollment) {
             if ($asObject) {
@@ -218,14 +274,18 @@ class Course {
      *  @caveats works only as one group at a time. 
      *  @see https://support.schoology.com/hc/en-us/requests/101876
      */    
-    function createGradingGroups($sectionId) {
+    function createGradingGroups($sectionId, $import = null) {
         $schoology = $this->app();
         
         // convert user ids to enrollment ids
         $lookup = $this->listMembers($sectionId);
         $memberObjects = $this->getMemberObjects($sectionId);
-        $groups = $this->groups($lookup);
-        
+        if (isset($import)) {
+          $groups = $import;
+        } else {
+          $groups = $this->groups($lookup);
+        }
+
         foreach ($groups as $group) {
             $request = (object)$group;
             $json = json_encode($request);
@@ -235,6 +295,7 @@ class Course {
             $url = str_replace('{section_id}', $sectionId, $url);
 
             // do the call
+            $schoology = $this->app();
             $response = $schoology->api($url, 'POST', $json);
         }
     }
@@ -251,8 +312,7 @@ class Course {
         // convert user ids to enrollment ids
         $lookup = $this->listMembers($sectionId);
         $memberObjects = $this->getMemberObjects($sectionId);
-        $groups = $this->groups($lookup);
-        
+        $groups = $this->groups($lookup);        
         $gradingGroups = $this->listGradingGroups($sectionId);
 
         foreach ($groups as $group) {
@@ -264,6 +324,7 @@ class Course {
                 // do the call
                 $response = $schoology->api($url, 'DELETE');
             }
+            usleep(20*1000); // wait 20ms 
         }
     }
     
@@ -271,11 +332,9 @@ class Course {
     // with group names as keys
     // so we can easily look up the ids
     function listGradingGroups($sectionId) {
-        $schoology = $this->app();
-        
         $url = 'sections/{section_id}/grading_groups';
         $url = str_replace('{section_id}', $sectionId, $url);
-        $response = $schoology->api($url, 'GET');       
+        $response = $this->api($url);       
 
         $groupList = array();
         foreach($response->result->grading_groups as $group) {
@@ -290,11 +349,10 @@ class Course {
     * and members as sub array
     */
     function listAllGradingGroupMembers($sectionId) {
-        $schoology = $this->app();
         $members = array_flip($this->listMembers($sectionId));
         $url = 'sections/{section_id}/grading_groups';
         $url = str_replace('{section_id}', $sectionId, $url);
-        $response = $schoology->api($url, 'GET');       
+        $response = $this->api($url);       
         
         foreach($response->result->grading_groups as $id=>$group) {            
             foreach ($group->members as $key=>$member) {
@@ -305,26 +363,34 @@ class Course {
     }
 
     function getGrade($sectionId, $assignmentId, $enrollmentId) {
-        $schoology = $this->app();
         $members = array_flip($this->listMembers($sectionId));
         
         $url = 'sections/{section_id}/grades?assignment_id={assignment_id}&enrollment_id={enrollment_id}';
         $url = str_replace('{assignment_id}', $assignmentId, $url);
         $url = str_replace('{enrollment_id}', $enrollmentId, $url);
         $url = str_replace('{section_id}', $sectionId, $url);
-        $response = $schoology->api($url, 'GET');       
-        
+        $response = $this->api($url, '+1 minute');       
         return $response->result->grades->grade[0]->grade;
+    }
+    
+    function getComments($sectionId, $assignmentId, $enrollmentId) {
+        $members = array_flip($this->listMembers($sectionId));
+        
+        $url = 'sections/{section_id}/grades?assignment_id={assignment_id}&enrollment_id={enrollment_id}';
+        $url = str_replace('{assignment_id}', $assignmentId, $url);
+        $url = str_replace('{enrollment_id}', $enrollmentId, $url);
+        $url = str_replace('{section_id}', $sectionId, $url);
+        $response = $this->api($url, '+1 minute');       
+        return $response->result->grades->grade[0]->comment;
     }
     
     // make a list of all members of a specific group
     function listGradingGroupMembers($sectionId, $groupName = '') {
-        $schoology = $this->app();
         $members = array_flip($this->listMembers($sectionId));
         
         $url = 'sections/{section_id}/grading_groups';
         $url = str_replace('{section_id}', $sectionId, $url);
-        $response = $schoology->api($url, 'GET');       
+        $response = $this->api($url);       
 
         // delete unrequested groups, there is no other way to individually poll group members
         if ($groupName!='') {
@@ -345,43 +411,45 @@ class Course {
         return $response->result->grading_groups;
     }
 
+    function getGradingCategories($sectionId) {    
+        $url = 'sections/{section_id}/grading_categories';
+        $url = str_replace('{section_id}', $sectionId, $url);
+        $response = $this->api($url);
+
+        $categoryList = array();
+        foreach($response->result->grading_category as $category) {
+            $categoryList[$category->id] = $category->title;
+        }
+
+        return $categoryList;
+    }
+
     // make an array of submissions
     // for a specific user
     function listFilesOfUser($sectionId, $member) {
         $assignments = $this->getSectionAssignments($sectionId);
         $enrollments = $this->listMembers($sectionId);
-        $schoology = $this->app();
         $files = array();
         
-        foreach ($assignments as $id=>$assignment) {
+        foreach ($assignments as $assignmentId=>$assignmentTitle) {
             $url = 'sections/{section_id}/submissions/{grade_item_id}/{user_id}/revisions?with_attachments=1';
             $url = str_replace('{section_id}', $sectionId, $url);
-            $url = str_replace('{grade_item_id}', $id, $url);
+            $url = str_replace('{grade_item_id}', $assignmentId, $url);
             $url = str_replace('{user_id}', $member->uid, $url);
-            $response = $schoology->api($url, 'GET');
+            $response = $this->api($url, '+1 minute');
             foreach ($response->result->revision as $revision) { 
-                foreach ($revision->attachments->files as $file) {      
-                        $f = current($file);                        
-                        $objFile = new stdClass;
-                        $objFile->grade = $this->getGrade($sectionId, $id, $enrollments[$member->uid]);                        
-                        $objFile->member = $member;
-                        $objFile->userId = $this->toLongId($member->school_uid);
-                        $objFile->first_name = $member->name_first;
-                        $objFile->last_name = $member->name_last;
-                        $objFile->revision = $revision->revision_id;
-                        $MB = 1024*1024;
-                        $objFile->size = round($revision->attachments->files->file[0]->filesize / $MB, 1);
-                        $objFile->apiUrl = $this->removeBase($f->download_path);
-                        $objFile->url = str_replace('api.schoology.com/v1','app.schoology.com', $f->download_path);                        
-                        $objFile->name = $f->title;
-                        $objFile->datetime = date('Y-m-d H:i:s', $f->timestamp);
-                        $fileNameParts = [$assignments[$id], $objFile->last_name, $objFile->first_name, $objFile->userId, $objFile->revision, $objFile->name];
-                        $fileName = join(' ', $fileNameParts);
-                        $sanitized = preg_replace('/[^a-zA-Z0-9\-\._]/', '-', $fileName);
-                        $objFile->saveAs = $sanitized;
-
-                        $objFile->assignmentId = $id;
-                        $files[] = $objFile;
+                foreach ($revision->attachments->files as $downloads) {      
+                        $file = current($downloads);                          
+                        $objSubmission = (new Submission)
+                          ->setCourse($this)
+                          ->setFile($file)
+                          ->setAssignment($assignmentId)
+                          ->setMember($member)
+                          ->setRevision($revision)
+                          ->setFilename();
+                        $objSubmission->grade = $this->getGrade($sectionId, $assignmentId, $enrollments[$member->uid]);
+                        $objSubmission->comment = $this->getComments($sectionId, $assignmentId, $enrollments[$member->uid]);                                                
+                        $files[] = $objSubmission;
                 }
             }
         }
@@ -390,46 +458,39 @@ class Course {
     
     // make an array of submissions
     // of an assignment for each member of the group
-    function listFilesOfGroupMembers($sectionId, $groupName, $assignment) {
+    function listFilesOfGroupMembers($sectionId, $groupName, $assignmentId) {
         // get members
         $groups = $this->listGradingGroupMembers($sectionId, $groupName);
         $enrollments = $this->listMembers($sectionId);
-        $schoology = $this->app();
         
         // get submissions per member
         $files = array();
-        
         $users = [];
         foreach ($groups as $group) 
             foreach ($group->members as $member) {
                 $url = 'sections/{section_id}/submissions/{grade_item_id}/{user_id}/revisions?with_attachments=1';
                 $url = str_replace('{section_id}', $sectionId, $url);
-                $url = str_replace('{grade_item_id}', $assignment, $url);
+                $url = str_replace('{grade_item_id}', $assignmentId, $url);
                 $url = str_replace('{user_id}', $member->uid, $url);
-                $response = $schoology->api($url, 'GET');
+                $response = $this->api($url, '+1 minute');                
+                // check for failing api call
+                if(!is_object($response->result))
+                  continue;
                 foreach ($response->result->revision as $revision) { 
-                    foreach ($revision->attachments->files as $file) {
-                        $f = current($file);                        
-                        $objFile = new stdClass;
-                        $objFile->grade = $this->getGrade($sectionId, $assignment, $enrollments[$member->uid]);
-                        $objFile->member = $member;
-                        $objFile->userId = $this->toLongId($member->school_uid);
-                        $objFile->group = $groupName;
-                        $objFile->first_name = $member->name_first;
-                        $objFile->last_name = $member->name_last;
-                        $objFile->revision = $revision->revision_id;
-                        $MB = 1024*1024;
-                        $objFile->size = round($revision->attachments->files->file[0]->filesize / $MB, 1);
-                        $objFile->apiUrl = $this->removeBase($f->download_path);
-                        $objFile->url = str_replace('api.schoology.com/v1','app.schoology.com', $f->download_path);                        
-                        $objFile->name = $f->title;
-                        $objFile->datetime = date('Y-m-d H:i:s', $f->timestamp);
-                        $fileNameParts = [$objFile->last_name, $objFile->first_name, $objFile->userId, $objFile->revision, $objFile->name];
-                        $fileName = join(' ', $fileNameParts);
-                        $sanitized = preg_replace('/[^a-zA-Z0-9\-\._]/', '-', $fileName);
-                        $objFile->saveAs = $sanitized;
-                        $objFile->assignmentId = $assignment;
-                        $files[] = $objFile;
+                    foreach ($revision->attachments->files as $downloads) {
+                        $file = current($downloads);                          
+                        $objSubmission = (new Submission)
+                          ->setCourse($this)
+                          ->setFile($file)
+                          ->setGroup($groupName)
+                          ->setAssignment($assignmentId)
+                          ->setMember($member)
+                          ->setRevision($revision)
+                          ->setFilename();
+                        $objSubmission->grade = $this->getGrade($sectionId, $assignmentId, $enrollments[$member->uid]);
+                        $objSubmission->comment = $this->getComments($sectionId, $assignmentId, $enrollments[$member->uid]);
+                                                                        
+                        $files[] = $objSubmission;
                     }
                 }
         }
@@ -439,13 +500,14 @@ class Course {
     // save all attachments for a specific group and assignment
     function saveAttachments($files, $assignment) {
         $downloadsFolder = 'downloads';
+        $FS = new Filesystem;
         foreach ($files as $file) {
             $filename = str_replace(' ', '-', $file->group . '-' . $file->last_name . '-' . $file->first_name . '-' . $file->userId . '-' . $file->revision . '-' . $file->name);
-            $sanitized = preg_replace('/[^a-zA-Z0-9\-\._]/', '-', $assignment);
-            $groupFolder = $downloadsFolder . '/' . $sanitized . '/' . $file->group;
-            $this->mkdir($groupFolder);
-            $schoology = $this->app();
-            $response = $schoology->api($file->apiUrl, 'GET');
+            $sanitized = $FS->sanitize($assignment);
+            $sanitizedGroup = $FS->sanitize($file->group);
+            $groupFolder = $downloadsFolder . '/' . $sanitized . '/' . $sanitizedGroup;
+            $FS->mkdir($groupFolder);
+            $response = $this->api($file->apiUrl);
             $sanitized_filename = iconv("UTF-8", "ISO-8859-1//TRANSLIT", $filename);
             $filePath = $groupFolder . '/' . $sanitized_filename;
             // download and save raw file
@@ -462,9 +524,8 @@ class Course {
             $filename = str_replace(' ', '-', $assignments[$file->assignmentId] . '-' . $file->last_name . '-' . $file->first_name . '-' . $file->userId . '-' . $file->revision . '-' . $file->name);
             $sanitized_filename = iconv("UTF-8", "ISO-8859-1//TRANSLIT", $filename);
             $userFolder = str_replace(' ', '-', $downloadsFolder . '/' . strtoupper($member->username) . '-' . $member->name_last . '-' . $member->name_first);
-            $this->mkdir($userFolder);
-            $schoology = $this->app();
-            $response = $schoology->api($file->apiUrl, 'GET');
+            (new Filesystem)->mkdir($userFolder);
+            $response = $this->api($file->apiUrl);
             $filePath = $userFolder . '/' . $sanitized_filename;
             // download and save raw file
             if (!file_exists($filePath)) {
@@ -476,28 +537,31 @@ class Course {
     // create a zip file containing a specific
     // list of files from all or one group for an assignment 
     function download($section, $member, $assignment, $group) {
-        $folder = 'downloads';
-        $zipFile = 'download';
+        $downloads = 'downloads/';
+        $folder = '';
+        $zipFile = '';
+        $extension = '.zip';
         if (isset($member)) {
-            $schoolId = strtoupper($this->toLongId($member->school_uid));
-            $folder .= '/' . str_replace(' ', '-', $schoolId . '-' . $member->name_last . '-' . $member->name_first);
-            $zipFile = $folder;
+            $schoolId = strtoupper(formatId($member->school_uid));
+            $folder = $downloads . '/' . str_replace(' ', '-', $schoolId . '-' . $member->name_last . '-' . $member->name_first);
+            $zipFile = $folder . $extension;
         }
         else {
             if (isset($assignment)) {
-                $zipFile = preg_replace('/[^a-zA-Z0-9\-\._]/', '-', $assignment);
-                $folder .= '/' . $zipFile;
+                $folder .= $downloads . (new Filesystem)->sanitize($assignment);
+                $zipFile = $folder . $extension;
             }
-            if (isset($group)) {
-                $zipFile .= '-' . $group;
-                $folder .= '/' . $group;
-            }           
+            else {
+              if (isset($group)) {
+                  $sanitizedGroup = (new Filesystem)->sanitize($group);
+                  $folder = $downloads . $sanitizedGroup;
+                  $zipFile = $downloads . $sanitizedGroup . $extension;
+              }           
+            }
         }
-        $zipFile .= '.zip';
         // delete previous download file
-        if (file_exists($zipFile)) {
-            unlink($zipFile);
-        }
+        (new Filesystem)->unlink($zipFile);
+        
         // build download file
         $objArchive = new FlxZipArchive;
         $canZip = $objArchive->open($zipFile, ZipArchive::CREATE);
@@ -538,6 +602,15 @@ class Course {
             $response = $schoology->api($url, 'PUT', $json);        
         }
     }
+ 
+    /* purge all downloads */
+    function purgeDownloads() {
+      $downloadsFolder = realpath('downloads');
+      $objFilesystem = new Filesystem;
+      $objFilesystem->deleteFiles($downloadsFolder);
+      $this->_errors = $objFilesystem->getErrors();
+      $objFilesystem->mkdir($downloadsFolder);
+    }
     
     // test if we can actually post something to schoology
     // result: yes we can
@@ -547,5 +620,43 @@ class Course {
         $response = $schoology->api('groups', 'POST', $query);
         dump(json_decode($response->result));
     }
+
+    // upload a CSV file with members to the server
+    // for it to be imported    
+    // @return an array of group,member pairs
+    function uploadMembersCsv() {
+      $uploader = new Uploader('uploads');
+      $fieldName = 'upload';
+      $type = 'csv';
+      $targetFile = $uploader->upload($fieldName, $type);
+      if (!$uploader->hasErrors()) {
+				$csv = array_map('str_getcsv', file($targetFile));
+				return $csv;
+			}
+			else
+			{
+				$this->_errors = $uploader->getErrors();
+				return [];
+			}
+    }
+    
+    function importCsv($sectionId, $data) {
+        $schoology = $this->app();
+        
+        // convert school user ids to schoology ids
+        $memberObjects = $this->getMemberObjects($sectionId);
+        $users = [];
+        $enrollments = $this->listMembers($sectionId);
+        foreach ($memberObjects as $id=>$user) {
+          $users[formatId($user->school_uid)] = $id;
+        }
+				foreach ($data as $entry) {
+          $group = $entry[0];
+          $userId = $entry[1];
+          dump($users[$entry[1]]);
+				}
+				return;
+    }
+
 }
 ?>
