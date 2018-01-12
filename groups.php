@@ -145,7 +145,7 @@ require_once('controller.php');
               <?=$html->getParamsAsHiddenInputs(['category', 'status']);?>
               <label for="status">Completion status</label>
               <select id="status" name="status">
-                <option>None</option>
+                <option value="3">None</option>
                 <option value="0" <?=$html->selected('0', $status)?>>Must view the item</option>
                 <option value="1" <?=$html->selected('1', $status)?>>Must make a submission</option>
                 <option value="2" <?=$html->selected('2', $status)?>>Must score at least 80</option>
@@ -230,8 +230,10 @@ require_once('controller.php');
                 <th>Assignment</th>
                 <th>Revision</th>
                 <th>Size</th>
+                <th>Date</th>
                 <th>Grade</th>
                 <th>File</th>
+                <th><i class="fa fa-comment" aria-hidden="true"></i></th>
             </tr>
             <?
                 foreach ($files as $file) { ?>
@@ -239,8 +241,10 @@ require_once('controller.php');
                     <td><?=$assignments[$file->assignmentId]?></td>
                     <td class="numeric"><?=$file->revision?></td>          
                     <td class="numeric"><?=$file->size . ' MB'?></td>          
+                    <td><?=$file->datetime?></td>          
                     <td class="numeric"><?=$file->grade?></td>                      
                     <td><a href="<?=$file->url?>"><?=$file->name?></a></td>
+                    <td><i title="<?=$file->comment?>" class="fa <?=$file->comment!=''?'fa-comment':''?>" aria-hidden="true"></i></td>
                 </tr>
             <?
             }
@@ -289,7 +293,7 @@ require_once('controller.php');
             <p>Make sure that</p>
             <ol>
               <li>Members are registered in Schoology</li>
-              <li>Your file is formatted as {'group name','id'} where id can be user name or schoology unique id</li>
+              <li>Your file is formatted as <em>group name,id</em> where id can be user name or schoology unique id</li>
             </ol>
             <form "frmImport" action="groups.php?section=<?=$section?>&action=upload" method="post" enctype="multipart/form-data">
               <div class="upload-btn-wrapper">
