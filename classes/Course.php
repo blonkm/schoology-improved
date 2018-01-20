@@ -159,7 +159,7 @@ class Course {
         $result = $response->result;
         $assignments = [];
         foreach ($result->assignment as $assignment) {
-          $isSelectedStatus = $assignment->completion_status == $statusAsText;
+          $isSelectedStatus = $assignment->completion_status == $statusAsText || $completionStatus==self::STATUS_ALL;
           $isSelectedCategory = ($assignment->grading_category == $category) || is_null($category);
             if ($isSelectedStatus && $isSelectedCategory) {
                 $assignments[$assignment->id] = $assignment->title;
@@ -473,7 +473,6 @@ class Course {
                 $url = str_replace('{grade_item_id}', $assignmentId, $url);
                 $url = str_replace('{user_id}', $member->uid, $url);
                 $response = $this->api($url, '+1 minute');                
-//dump($response);
                 // check for failing api call
                 if(!is_object($response->result))
                   continue;
