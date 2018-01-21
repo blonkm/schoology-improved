@@ -85,7 +85,7 @@ switch (strtolower($action)) {
         $first = $member->name_first;
         $last = $member->name_last;
         $id = $member->id;
-        $schoolId = $formatId($member->school_uid);
+        $schoolId = formatId($member->school_uid);
         $files = $course->listFilesOfUser($section, $member);        
         $pageTitle = "Downloading submissions for user " . strtoupper($member->username) . " in course " . $sectionInfo->section_title;
         $course->savePortfolio($files, $member, $assignments);

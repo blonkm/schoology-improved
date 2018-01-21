@@ -12,10 +12,11 @@ class Course {
     const MAX_ASSIGNMENTS = 400; // arbitrary to limit download time
     const DATE_FORMAT = 'D Y-M-d h:m'; // Mon 2017-nov-20 8:50
     const STATUS_TEXT = ['View the item', 'Make a submission', 'Score at least'];
-    const STATUS_VIEW_THE_ITEM = 0;
+    const STATUS_MUST_VIEW_THE_ITEM = 0;
     const STATUS_MAKE_A_SUBMISSION = 1;
     const STATUS_SCORE_AT_LEAST = 2;
     const STATUS_ALL = 3;
+    const STATUS_ALL_TEXT = "";
     
     private static $API_KEY;
     private static $API_SECRET;
@@ -37,7 +38,7 @@ class Course {
     function getStatusAsText($status) {
       $statusAsText = ['Must view the item', 'Must make a submission', 'Must score at least'];
       switch(intval($status)) {
-        case self::STATUS_VIEW_THE_ITEM: 
+        case self::STATUS_MUST_VIEW_THE_ITEM : 
         case self::STATUS_MAKE_A_SUBMISSION:
         case self::STATUS_SCORE_AT_LEAST:
           return $statusAsText[intval($status)];
@@ -159,7 +160,7 @@ class Course {
         $assignments = [];
         foreach ($result->assignment as $assignment) {
           $isSelectedStatus = $assignment->completion_status == $statusAsText || $completionStatus==self::STATUS_ALL;
-          $isSelectedCategory = $assignment->grading_category == $category || is_null($category);
+          $isSelectedCategory = ($assignment->grading_category == $category) || is_null($category);
             if ($isSelectedStatus && $isSelectedCategory) {
                 $assignments[$assignment->id] = $assignment->title;
             }
@@ -173,7 +174,7 @@ class Course {
      *  @returns the user object
      */    
     function getUserInfo($userId) {
-        $url = 'users/{id}';
+        $url = 'users/{id}?picture_size=big';
         $url = str_replace('{id}', $userId, $url);
 
         // do the call
@@ -274,18 +275,17 @@ class Course {
      *  @caveats works only as one group at a time. 
      *  @see https://support.schoology.com/hc/en-us/requests/101876
      */    
-    function createGradingGroups($sectionId, $import = null) {
+    function createGradingGroups($sectionId, $import=null) {
         $schoology = $this->app();
         
         // convert user ids to enrollment ids
         $lookup = $this->listMembers($sectionId);
         $memberObjects = $this->getMemberObjects($sectionId);
         if (isset($import)) {
-          $groups = $import;
+          $groups = $this->groups($import);
         } else {
           $groups = $this->groups($lookup);
         }
-
         foreach ($groups as $group) {
             $request = (object)$group;
             $json = json_encode($request);
@@ -478,19 +478,21 @@ class Course {
                   continue;
                 foreach ($response->result->revision as $revision) { 
                     foreach ($revision->attachments->files as $downloads) {
-                        $file = current($downloads);                          
-                        $objSubmission = (new Submission)
-                          ->setCourse($this)
-                          ->setFile($file)
-                          ->setGroup($groupName)
-                          ->setAssignment($assignmentId)
-                          ->setMember($member)
-                          ->setRevision($revision)
-                          ->setFilename();
-                        $objSubmission->grade = $this->getGrade($sectionId, $assignmentId, $enrollments[$member->uid]);
-                        $objSubmission->comment = $this->getComments($sectionId, $assignmentId, $enrollments[$member->uid]);
-                                                                        
-                        $files[] = $objSubmission;
+                       foreach ($downloads as $download) {
+                            $file = $download;
+                            $objSubmission = (new Submission)
+                              ->setCourse($this)
+                              ->setFile($file)
+                              ->setGroup($groupName)
+                              ->setAssignment($assignmentId)
+                              ->setMember($member)
+                              ->setRevision($revision)
+                              ->setFilename();
+                            $objSubmission->grade = $this->getGrade($sectionId, $assignmentId, $enrollments[$member->uid]);
+                            $objSubmission->comment = $this->getComments($sectionId, $assignmentId, $enrollments[$member->uid]);
+                                                                            
+                            $files[] = $objSubmission;
+                       }
                     }
                 }
         }
@@ -643,18 +645,20 @@ class Course {
     function importCsv($sectionId, $data) {
         $schoology = $this->app();
         
-        // convert school user ids to schoology ids
         $memberObjects = $this->getMemberObjects($sectionId);
         $users = [];
         $enrollments = $this->listMembers($sectionId);
         foreach ($memberObjects as $id=>$user) {
+          // convert school user ids to schoology ids
           $users[formatId($user->school_uid)] = $id;
         }
 				foreach ($data as $entry) {
           $group = $entry[0];
           $userId = $entry[1];
-          dump($users[$entry[1]]);
+          echo($userId . ' -> ' . $group . "<br/>");
 				}
+				//TODO: convert school_uid to schoology ID or even better: enrollmentId
+				//$this->createGradingGroups($sectionId, $data);
 				return;
     }
 
