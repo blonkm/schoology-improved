@@ -253,7 +253,8 @@ class Course {
     function listMembers($sectionId, $asObject = false) {
         $url = 'sections/{section_id}/enrollments?enrollment_status=1&limit=400';
         $url = str_replace('{section_id}', $sectionId, $url);
-
+        $userList = [];
+       
         // do the call
         $response = $this->api($url);
         $members = $response->result;
