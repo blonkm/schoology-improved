@@ -30,6 +30,10 @@ switch (strtolower($action)) {
         break;
 */
 	case 'pictures':
+    case 'courses':
+      $courses = $course->getCourses();
+      $pageTitle = "Select a course from available courses";
+      break;
     case 'groups':
     case 'list':
     case 'code':

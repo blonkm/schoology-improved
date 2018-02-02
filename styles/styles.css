@@ -170,3 +170,69 @@ code {
 }
 
 select {font-size:.9em; }
+
+/* course section list */
+#courses { margin-left: 30px; }
+
+#courses ul
+{
+margin: 0;
+padding: 0;
+list-style-type: none;
+font-family: verdana, arial, Helvetica, sans-serif;
+}
+
+#courses li { margin: 0; }
+
+#courses a
+{
+display: block;
+padding: 5px 10px;
+width: 140px;
+color: #000;
+background-color: #ADC1AD;
+text-decoration: none;
+border-top: 1px solid #fff;
+border-left: 1px solid #fff;
+border-bottom: 1px solid #333;
+border-right: 1px solid #333;
+font-weight: bold;
+font-size: .8em;
+background-image: url(images/vertical06.jpg);
+background-repeat: no-repeat;
+background-position: 0 0;
+}
+
+#courses a:hover
+{
+color: #000;
+background-color: #889E88;
+text-decoration: none;
+border-top: 1px solid #333;
+border-left: 1px solid #333;
+border-bottom: 1px solid #fff;
+border-right: 1px solid #fff;
+background-image: url(images/vertical06a.jpg);
+background-repeat: no-repeat;
+background-position: 0 0;
+}
+
+#courses ul ul li { margin: 0; }
+
+#courses ul ul a
+{
+display: block;
+padding: 5px 5px 5px 30px;
+width: 125px;
+color: #000;
+background-color: #C5D8C5;
+text-decoration: none;
+font-weight: normal;
+}
+
+#courses ul ul a:hover
+{
+color: #000;
+background-color: #889E88;
+text-decoration: none;
+}

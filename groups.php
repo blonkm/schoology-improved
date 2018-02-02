@@ -33,8 +33,6 @@ $cache = strtolower(filter_input( INPUT_GET, 'cache', FILTER_SANITIZE_URL ));
 $status = strtolower(filter_input( INPUT_GET, 'status', FILTER_SANITIZE_URL ));
 $category = strtolower(filter_input( INPUT_GET, 'category', FILTER_SANITIZE_URL ));
 
-if (empty($section))
-    die("error:missing parameter 'section'");
     
 // init objects for entire page
 $timer = new Timer;
@@ -42,10 +40,15 @@ $course = new Course();
 if ($cache=='no')
   $course->disableCache();    
 
-$sectionInfo = $course->getSectionInfo($section);
-$pageTitle = "Schoology Groups - section: " . $sectionInfo->section_title;
+if (!empty($section)) {
+//    die("error:missing parameter 'section'");
+  $sectionInfo = $course->getSectionInfo($section);
+  $pageTitle = "Schoology Groups - section: " . $sectionInfo->section_title;
+}
+
 $filesSaved = false;
 $menuItems = [
+  'courses' => ['courses', 'show a list of courses and their sections'], 
   'groups' => ['pictures', 'show a list of pictures of students'], 
   'members' => ['list', 'show a list of students'], 
   'excel' => ['export', 'save student list as Excel file'],
@@ -75,12 +78,16 @@ require_once('controller.php');
 </head>
 <body>
     <header>&nbsp;</header>
+    <?if (!empty($section)) {?>
     <img id="course-logo" src="<?=$sectionInfo->profile_url?>" width="170"/>
-    <h1>Schoology Group: <?=$action?></h1>
+    <?}?>
+    <h1>Schoology: <?=$action?></h1>
+    <?if (!empty($section)) {?>
     <h2>Course/Section: <?=$sectionInfo->course_title?>: <?=$sectionInfo->section_title?> (<?=$sectionInfo->section_code?>)</h2>
     <p><a href="http://app.schoology.com/course/<?=$sectionInfo->id?>">view on schoology</a></p>
     <p><cite><?=$sectionInfo->description?></cite></p>
-
+    <?}?>
+    
 <section class="container">
   <div class="left-half">
     <nav>
@@ -101,6 +108,24 @@ require_once('controller.php');
     <?
     $action = strtolower($action);
     switch($action) {
+        case 'courses':
+
+            ?>
+            <nav id="courses">
+            <ul><?
+            foreach ($courses as $objCourse) {?>
+                <li><a href=""><?=$objCourse->title?></a>
+                  <ul><?
+                    foreach ($objCourse->sections as $section) {?>
+                      <li><a href="?section=<?=$section->id?>&action=matrix"><?=$section->section_title?></a></li>
+                    <?}?>
+                  </ul>
+                </li>
+            <?}?>          
+            </ul>
+            </nav>
+            <?
+          break;
         case 'pictures':
         case 'groups':
         case 'members':

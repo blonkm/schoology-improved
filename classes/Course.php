@@ -127,6 +127,42 @@ class Course {
             echo '<p class="error">' . $message . '</p>';
     }
 
+    function getSections($courseId) {
+        $url = 'courses/{id}/sections';
+        $url = str_replace('{id}', $courseId, $url);
+
+        // do the call
+        $response = $this->api($url);
+        $sections = $response->result;
+        return $sections;
+    }
+    
+    /** 
+     *  Get courses
+     *  @param 
+     *  @returns the courses
+     */    
+    function getCourses($withSections = true, $onlyActive = true) {
+        $url = 'courses&limit=400';
+
+        // do the call
+        $response = $this->api($url);
+        $result = $response->result;
+        $courses = [];
+        foreach ($result->course as $course) {
+          $sections = $this->getSections($course->id);
+          $addSection = $onlyActive==true && count($sections->section) > 0;
+          if ($withSections && $addSection) {
+            $course->sections = $sections->section;
+          }
+          if ($addSection || $onlyActive==false) {
+            $courses[] = $course;
+          }
+        }
+
+        return $courses;    
+    }
+    
     /** 
      *  Get course section Info
      *  @param sectionId
