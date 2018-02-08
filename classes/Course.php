@@ -334,6 +334,7 @@ class Course {
             // do the call
             $schoology = $this->app();
             $response = $schoology->api($url, 'POST', $json);
+            usleep(200*1000); // wait 200ms 
         }
     }
 
@@ -695,7 +696,7 @@ class Course {
           echo($userId . ' -> ' . $group . "<br/>");
 				}
 				//TODO: convert school_uid to schoology ID or even better: enrollmentId
-				//$this->createGradingGroups($sectionId, $data);
+				$this->createGradingGroups($sectionId, $data);
 				return;
     }
 
