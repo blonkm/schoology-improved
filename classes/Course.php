@@ -9,8 +9,10 @@
 class Course {
     const API_BASE = 'https://api.schoology.com/v1';
     const WEB_BASE = 'https://www.schoology.com';
-    const MAX_ASSIGNMENTS = 400; // arbitrary to limit download time
-    const DATE_FORMAT = 'D Y-M-d h:m'; // Mon 2017-nov-20 8:50
+    const LIMIT = 400; // arbitrary to limit download time
+    const DATETIME_FORMAT = 'D Y-M-d h:i A'; // Mon 2017-nov-20 8:50
+    const DATE_FORMAT = 'D Y-M-d'; // Mon 2017-nov-20
+    const TIME_FORMAT = 'h:i A'; // 8:50AM
     const STATUS_TEXT = ['View the item', 'Make a submission', 'Score at least'];
     const STATUS_MUST_VIEW_THE_ITEM = 0;
     const STATUS_MAKE_A_SUBMISSION = 1;
@@ -181,13 +183,13 @@ class Course {
     
     /** 
      *  Get list of section assignments
-     *  for a maximum of MAX_ASSIGNMENTS (initially 400) assignments
+     *  for a maximum of LIMIT (initially 400) assignments
      *  @param sectionId
      *  @returns array of assignments for the section
      */    
     function getSectionAssignments($sectionId, $completionStatus=self::STATUS_MAKE_A_SUBMISSION, $category=null) {
         $statusAsText = $this->getStatusAsText($completionStatus);
-        $url = 'sections/{section_id}/assignments?limit=' . self::MAX_ASSIGNMENTS;
+        $url = 'sections/{section_id}/assignments?limit=' . self::LIMIT;
         $url = str_replace('{section_id}', $sectionId, $url);
 
         // do the call
@@ -217,6 +219,44 @@ class Course {
         $response = $this->api($url);
         $userInfo = $response->result;
         return $userInfo;    
+    }
+    
+    /** 
+     *  Get User Last Login Info
+     *  @param userId, the schoology ID
+     *  @returns the user object
+     */    
+    function getUserLastLoginInfo($userId) {
+        $url = 'analytics/users/{id}?start_time={start}&end_time={end}';
+        $start = strtotime('-7 days');
+        $end = strtotime('now');
+        $url = str_replace('{id}', $userId, $url);
+        $url = str_replace('{start}', $start, $url);
+        $url = str_replace('{end}', $end, $url);
+
+        // do the call
+        $response = $this->api($url);
+        $userInfo = $response->result;
+        return $userInfo;    
+    }
+    
+    /** 
+     *  Get User Last Login Info
+     *  @param userId, the schoology ID
+     *  @returns the user object
+     */    
+    function getAnalytics($sectionId) {
+        $url = 'analytics/highlights/sections/{section_id}?limit=' . self::LIMIT;
+        $url = str_replace('{section_id}', $sectionId, $url);
+
+        // do the call
+        $response = $this->api($url);
+        $result = $response->result;
+        $analytics = [];
+        foreach ($result->highlights as $login) {
+            $analytics[$login->uid] = $login->last_login;            
+        }
+        return $analytics;    
     }
     
     /** 

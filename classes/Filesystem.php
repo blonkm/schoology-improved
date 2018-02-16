@@ -65,7 +65,16 @@ class Filesystem {
     return $ret;
   }
 
-    function mkdir($folder) {
+  function toArray($file) {          
+    $ret = file($file);
+    if (!$ret) {
+      throw new Exception("Can't load file: " . $file);
+    } 
+    return $ret;
+  }
+
+
+  function mkdir($folder) {
       if (!is_dir($folder)) {
           mkdir($folder, 0755, true);
       }

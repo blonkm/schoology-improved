@@ -10,14 +10,16 @@
 /* should this go into the Course class? */
 function getAllUsers($groups) {
     $users = [];
-    foreach ($groups as $group) 
-        foreach ($group->members as $member) 
+    foreach ($groups as $group) {
+        foreach ($group->members as $member) {
             $users[] = (object)([
                 'group'=>$group->title, 
                 'first_name'=>$member->name_first, 
                 'last_name'=>$member->name_last,
                 'username'=>strtoupper($member->username),
                 'info'=>$member]);
+            }
+         }
     return $users;
 }
 
@@ -41,7 +43,24 @@ switch (strtolower($action)) {
     case '':
         $pageTitle = "Group members of section " . $sectionInfo->section_title;
         $groups = $course->listAllGradingGroupMembers($section);
-        $users = getAllUsers($groups);           
+        $users = getAllUsers($groups);         
+        break;
+    case 'attendance':
+        $pageTitle = "Attendance for members of section " . $sectionInfo->section_title;
+        $groups = $course->listAllGradingGroupMembers($section);
+        $users = getAllUsers($groups);
+        $analytics= $course->getAnalytics($section);
+        $timetable = new Timetable;
+        foreach ($users as $key=>$user) {
+            if (isset($analytics[$user->info->uid]))
+              $user->info->last_login = $analytics[$user->info->uid];
+              try {
+               $user->info->lesson = $timetable->lesson($user->info->last_login);
+              }
+              catch (Exception $e) {
+                  $user->info->lesson = 'home';
+              }
+        }  
         break;
     case 'matrix':
         $pageTitle = "Assignments of section " . $sectionInfo->section_title;

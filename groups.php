@@ -21,6 +21,7 @@ require_once('classes/Cache.php');
 require_once('classes/Filesystem.php');
 require_once('classes/Submission.php');
 require_once('classes/Html.php');
+require_once('classes/Timetable.php');
 
 debug(true);
 
@@ -54,6 +55,7 @@ $menuItems = [
   'excel' => ['export', 'save student list as Excel file'],
 //  'code' => ['code', 'generate PHP code for groups-import.php'],
   'matrix' => ['submissions', 'download assignment files'],
+  'attendance' => ['attendance', 'display attendance last week'],
   '' => ['',''],
   'import' => ['import', 'upload and import csv file'],
   'clean' => ['clean', 'delete all temporary files from server'],
@@ -129,7 +131,8 @@ require_once('controller.php');
         case 'pictures':
         case 'groups':
         case 'members':
-        case 'list'
+        case 'list':
+        case 'attendance':
             ?>
             <table>
             <tr>
@@ -140,6 +143,12 @@ require_once('controller.php');
                 <th>UserName</th>
                 <th>FirstName</th>
                 <th>LastName</th>
+                <?if ($action=='attendance') {?>
+                <th>Login Date</th>
+                <th>Login Time</th>
+                <th>Week</th>
+                <th>Lesson</th>
+                <?}?>
             </tr>
             <?
             foreach ($users as $user) { 
@@ -155,6 +164,12 @@ require_once('controller.php');
                     <td><a href="/schoology/groups.php?section=<?=$section?>&userid=<?=$user->info->uid?>&action=user"><?=$user->username?></a></td>
                     <td><?=$user->first_name?></td>
                     <td><?=$user->last_name?></td>
+                    <?if ($action=='attendance') {?>
+                    <td><?=date(Course::DATE_FORMAT, $user->info->last_login)?></td>
+                    <td><?=date(Course::TIME_FORMAT, $user->info->last_login)?></td>
+                    <td><?=date('W', $user->info->last_login)?></td>
+                    <td><?=$user->info->lesson?></td>
+                    <?}?>
                 </tr>
                 <?}
             }?>

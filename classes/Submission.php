@@ -27,7 +27,7 @@ class Submission {
     $this->apiUrl = (new Filesystem)->removeBase(Course::API_BASE, $file->download_path);
     $this->url = str_replace(Course::API_BASE, Course::WEB_BASE, $file->download_path);                        
     $this->name = $file->title;
-    $this->datetime = date(Course::DATE_FORMAT, $file->timestamp);
+    $this->datetime = date(Course::DATETIME_FORMAT, $file->timestamp);
     return $this;
   }
 
