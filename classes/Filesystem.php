@@ -73,6 +73,20 @@ class Filesystem {
     return $ret;
   }
 
+  /**
+   * @param $file   a csv file, with a header row
+   * @param delimiter  delimiter
+   * @returns an array of arrays, with header names used as keys
+   */
+  function csvToObj($file, $delimiter = ",") {
+    $lines = $this->toArray($file);
+    $csv = array_map(function ($item) use ($delimiter) {return str_getcsv($item, $delimiter); }, $lines);
+    array_walk($csv, function(&$a) use ($csv) {
+        $a = array_combine($csv[0], $a);
+    });
+    array_shift($csv); # remove column header
+    return $csv;
+}
 
   function mkdir($folder) {
       if (!is_dir($folder)) {

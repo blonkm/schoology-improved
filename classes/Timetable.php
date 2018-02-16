@@ -13,14 +13,22 @@ class Timetable {
   
   public function __construct() {
       $FS = new Filesystem;
-        $this->times = $FS->toArray('./config/.timetable');
+      $lessons = $FS->csvToObj('./config/.timetable', "\t");    
+      $this->times = array();
+      foreach ($lessons as $key=>$lesson) {
+          $t = new stdClass;
+          $t->startTime = $this->timeToSeconds(strtotime($lesson["startTime"]));
+          $t->endTime = $this->timeToSeconds(strtotime($lesson["endTime"]));
+          $t->hour = $lesson["hour"];
+          $this->times[] = $t;
+      }
     }
 
   /**
    * @param $timestamp php (unix) timestamp
    * @returns number of seconds since midnight (aka the time minus the date)
    */
-  public function secondsSinceMidnight($timestamp) {
+  public function timeToSeconds($timestamp) {
     if (!is_numeric($timestamp)) {
       throw new Exception('timestamp should be number');
     }
@@ -34,16 +42,16 @@ class Timetable {
    * @returns find where time given fits in school timetable
    */
   public function lesson($timestamp) {
-    $seconds = $this->secondsSinceMidnight($timestamp);
-    $lessons = array_map(function($time) { return $this->secondsSinceMidnight(strtotime($time)); }, $this->times);
-    $first = $lessons[0];
-    $last = $lessons[count($lessons)-1];
+    $seconds = $this->timeToSeconds($timestamp);
+    $lessons = $this->times;
+    $first = $lessons[0]->startTime;
+    $last = $lessons[count($lessons)-1]->endTime;
     if ($seconds < $first || $seconds > $last) {
       throw new Exception ('time not in lesson timetable');
     }
     foreach ($lessons as $key=>$lesson) {
-      if ($lesson > $seconds)
-        return $key;
+      if ($seconds > $lesson->startTime && $seconds < $lesson->endTime)
+        return $lesson->hour;
     }
     return count($lessons);
   }
