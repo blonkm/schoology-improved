@@ -1,5 +1,5 @@
 # Schoology-improved
-Using the Schoology API to do things you can't using the web version
+_**Using the Schoology API to do things you can't using the web version**_
 
 Schoology is a powerful Electronic Learning Environment. It helps you to manage materials, students, courses, etc. Still, some functionality is lacking.
 
@@ -30,13 +30,14 @@ You will need a server capable of running PHP. It will also need ZipArchive enab
 - Make sure there is write access to this folder from within PHP (on linux: chmod 755 <foldername>)
 
 ### Configuration
-You should start by copying all files to your server. Then, in the config directory create two files:
+You should start by copying all files to your server. Then, in the config directory create three files:
 
 ```
     .api_key
     .api_secret
+    .timetable
 ```
-In these files put your key and secret resepectively. Just the string, nothing else. The files may be hidden from view, so make sure to enable view hidden files (e.g. in FTP or SCP program).
+In the first two files put your key and secret resepectively Just the string, nothing else. The .timetable file is for a possible school timetable, so you can view attendance according to schedule. The files may be hidden from view, so make sure to enable view hidden files (e.g. in FTP or SCP program).
 
 Note: there is a method in helpers.php named 'formatId' which is specific for the school this was made for originally. You may need to change this function.
 
@@ -44,7 +45,7 @@ Note: there is a method in helpers.php named 'formatId' which is specific for th
 The import of groups is done by setting up a PHP array in ``groups_import.php````. This is only temporary, the aim is to import directly from a csv file. Ideally a schoology formatted export file can be used.
 
 ### Run import
-Now it's time to run the import by opening your browser and accessing .../groups.php?sectionId=...&action=create
+Now it's time to run the import by opening your browser, selecting a course, and then 'create'. There's also the 'import' option but it's not functional as of yet.
 
 ### Download submissions
-You can see all groups and links to their submission pages by accessing .../groups.php?sectionId=...&action=matrix
+You can see all groups and links to their submission pages by first selecting a course, and then select 'submissions'.
