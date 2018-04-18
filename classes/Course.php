@@ -434,8 +434,10 @@ class Course {
         
         foreach($response->result->grading_groups as $id=>$group) {            
             foreach ($group->members as $key=>$member) {
+              if (array_key_exists($member, $members)) {
                 $response->result->grading_groups[$id]->members[$key] = $this->getUserInfo($members[$member]);
             }
+        }              
         }              
         return $response->result->grading_groups;
     }
