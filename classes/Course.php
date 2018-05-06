@@ -436,8 +436,8 @@ class Course {
             foreach ($group->members as $key=>$member) {
               if (array_key_exists($member, $members)) {
                 $response->result->grading_groups[$id]->members[$key] = $this->getUserInfo($members[$member]);
+              }
             }
-        }              
         }              
         return $response->result->grading_groups;
     }
@@ -521,6 +521,8 @@ class Course {
                 foreach ($revision->attachments->files as $downloads) {      
                         $file = current($downloads);                          
                         $objSubmission = (new Submission)
+                          ->setId($file->id)
+                          ->setSection($sectionId)                          
                           ->setCourse($this)
                           ->setFile($file)
                           ->setAssignment($assignmentId)
@@ -552,7 +554,7 @@ class Course {
                 $url = str_replace('{section_id}', $sectionId, $url);
                 $url = str_replace('{grade_item_id}', $assignmentId, $url);
                 $url = str_replace('{user_id}', $member->uid, $url);
-                $response = $this->api($url, '+1 minute');                
+                $response = $this->api($url, '+10 seconds');                
                 // check for failing api call
                 if(!is_object($response->result))
                   continue;
@@ -561,6 +563,8 @@ class Course {
                        foreach ($downloads as $download) {
                             $file = $download;
                             $objSubmission = (new Submission)
+                              ->setId($download->id)
+                              ->setSection($sectionId)                          
                               ->setCourse($this)
                               ->setFile($file)
                               ->setGroup($groupName)
@@ -588,8 +592,8 @@ class Course {
             $sanitized = $FS->sanitize($assignment);
             $sanitizedGroup = $FS->sanitize($file->group);
             $groupFolder = $downloadsFolder . '/' . $sanitized . '/' . $sanitizedGroup;
-            $FS->mkdir($groupFolder);
-            $response = $this->api($file->apiUrl);
+            $FS->mkdir($groupFolder);            
+            $response = $this->api($file->apiUrl, '+1 second');
             $sanitized_filename = iconv("UTF-8", "ISO-8859-1//TRANSLIT", $filename);
             $filePath = $groupFolder . '/' . $sanitized_filename;
             // download and save raw file
@@ -607,7 +611,7 @@ class Course {
             $sanitized_filename = iconv("UTF-8", "ISO-8859-1//TRANSLIT", $filename);
             $userFolder = str_replace(' ', '-', $downloadsFolder . '/' . strtoupper($member->username) . '-' . $member->name_last . '-' . $member->name_first);
             (new Filesystem)->mkdir($userFolder);
-            $response = $this->api($file->apiUrl);
+            $response = $this->api($file->apiUrl, '+1 second');
             $filePath = $userFolder . '/' . $sanitized_filename;
             // download and save raw file
             if (!file_exists($filePath)) {
@@ -616,6 +620,12 @@ class Course {
         }
     }
 
+    // download one submission
+    function downloadFile($section, $submission) {
+      $response = $this->api('submission/' . $submission . '/source');
+      header("Location: " . $response->redirect_url);
+    }
+    
     // create a zip file containing a specific
     // list of files from all or one group for an assignment 
     function download($section, $member, $assignment, $group) {
@@ -732,10 +742,16 @@ class Course {
           // convert school user ids to schoology ids
           $users[formatId($user->school_uid)] = $id;
         }
-				foreach ($data as $entry) {
-          $group = $entry[0];
+        $importData = [];
+        foreach ($data as $entry) {
+          $uniqueId = $entry[0];
           $userId = $entry[1];
-          echo($userId . ' -> ' . $group . "<br/>");
+          $groupName = $entry[2];
+          $firstName = $entry[3];
+          $lastName = $entry[4];
+          $id = $uniqueId || $userId;
+          $importData[] = [$groupName, $id];
+          echo($id . ' -> ' . $groupName . "<br/>");
 				}
 				//TODO: convert school_uid to schoology ID or even better: enrollmentId
 				$this->createGradingGroups($sectionId, $data);

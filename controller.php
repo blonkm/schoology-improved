@@ -93,6 +93,19 @@ switch (strtolower($action)) {
         $pageTitle = "Deleting all groups of section " . $sectionInfo->section_title;
         $course->deleteAllGroups($section);
         break;
+    case 'file':
+/*
+        // first download file to local server
+        $pageTitle = "Downloading submission file " . $submission . " of assignment " . $assignment ;
+        $files = $course->listFilesOfGroupMembers($section, $group, $assignment);
+        $assignments = $course->getSectionAssignments($section, Course::STATUS_ALL);
+        $course->saveAttachments($files, $assignments[$assignment]);
+        if ($course->download($section, null, $assignments[$assignment], $group))
+*/        
+        $filesSaved = true;   
+        if ($course->downloadFile($section, $submission))
+            die(); // no more response, we're downloading a zip file            
+        break;
     case 'download':
         $pageTitle = "Downloading submissions of assignment " . $assignment;
         $files = $course->listFilesOfGroupMembers($section, $group, $assignment);

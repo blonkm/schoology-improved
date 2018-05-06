@@ -16,16 +16,23 @@ class Submission {
   public $saveAs;
   public $assignmentId;
   public $course;
+  public $sectionId;
+  public $id;
   
   public function setCourse($course) {
     $this->course = $course;
     return $this;
   }
+  
+  public function setSection($id) {
+    $this->sectionId = $id;
+    return $this;
+  }
 
   public function setFile($file) {
     $this->file = $file;
-    $this->apiUrl = (new Filesystem)->removeBase(Course::API_BASE, $file->download_path);
-    $this->url = str_replace(Course::API_BASE, Course::WEB_BASE, $file->download_path);                        
+    $this->apiUrl = (new Filesystem)->removeBase(Course::API_BASE, $file->download_path);   
+    $this->url = "?section=" . $this->sectionId . "&submission=" . $this->id . "&action=file";
     $this->name = $file->title;
     $this->datetime = date(Course::DATETIME_FORMAT, $file->timestamp);
     return $this;
@@ -63,5 +70,10 @@ class Submission {
     $this->saveAs = $sanitized;
     return $this;
   }  
+  
+  public function setId($id) {
+    $this->id = $id;
+    return $this;
+  }
 }
 ?>

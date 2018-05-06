@@ -33,6 +33,8 @@ $userid = strtolower(filter_input( INPUT_GET, 'userid', FILTER_SANITIZE_URL ));
 $cache = strtolower(filter_input( INPUT_GET, 'cache', FILTER_SANITIZE_URL ));
 $status = strtolower(filter_input( INPUT_GET, 'status', FILTER_SANITIZE_URL ));
 $category = strtolower(filter_input( INPUT_GET, 'category', FILTER_SANITIZE_URL ));
+$submission = strtolower(filter_input( INPUT_GET, 'submission', FILTER_SANITIZE_URL ));
+
 
     
 // init objects for entire page
@@ -331,10 +333,18 @@ require_once('controller.php');
           ?>            
             <h3>Import members</h3>
             <p>Make sure that</p>
-            <ol>
+            <ul>
               <li>Members are registered in Schoology</li>
-              <li>Your file is formatted as <em>group name,id</em> where id can be user name or schoology unique id</li>
-            </ol>
+              <li>Your file is formatted as
+				  <ol>
+					<li>uniqueid</li>
+					<li>user name</li>
+					<li>group name</li>
+					<li>first  name (optional)</li>
+					<li>last name</li>
+				  </oL
+  			  </li>
+            </ul>
             <form "frmImport" action="groups.php?section=<?=$section?>&action=upload" method="post" enctype="multipart/form-data">
               <div class="upload-btn-wrapper">
                 <button class="btn" form="frmImport">Select a file</button>
