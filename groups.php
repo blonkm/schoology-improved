@@ -211,7 +211,7 @@ require_once('controller.php');
             <?}?>
             <?foreach ($groups as $group=>$groupId) { ?>
                     <tr>
-                        <td><?=$group?></td><?
+                        <td><a href="http://labs.bluekoala-aruba.com/schoology/groups.php?section=<?=$section?>&action=groups&group=<?=$group?>"><?=$group?></a></td><?
                     foreach ($assignments as $id=>$assignment) { ?>
                         <td><a target="_blank" title="<?=$group?> - <?=$assignment?>" href="groups.php?section=<?=$section?>&group=<?=urlencode($group)?>&assignment=<?=$id?>&action=files">&nbsp;</a></td>
                     <?}?>
