@@ -107,6 +107,7 @@ switch (strtolower($action)) {
             die(); // no more response, we're downloading a zip file            
         break;
     case 'download':
+        $course->purgeDownloads();
         $pageTitle = "Downloading submissions of assignment " . $assignment;
         $files = $course->listFilesOfGroupMembers($section, $group, $assignment);
         $assignments = $course->getSectionAssignments($section, Course::STATUS_ALL);
