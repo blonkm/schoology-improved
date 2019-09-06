@@ -628,7 +628,7 @@ class Course {
     
     // create a zip file containing a specific
     // list of files from all or one group for an assignment 
-    function download($section, $member, $assignment, $group) {
+    function download($section, $member, $assignment = null, $group = null) {
         $downloads = 'downloads/';
         $folder = '';
         $zipFile = '';
