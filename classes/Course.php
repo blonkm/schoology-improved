@@ -519,7 +519,7 @@ class Course {
             $response = $this->api($url, '+1 minute');
             foreach ($response->result->revision as $revision) { 
                 foreach ($revision->attachments->files as $downloads) {      
-                        $file = current($downloads);                          
+                        foreach ($downloads as $file) {                          
                         $objSubmission = (new Submission)
                           ->setId($file->id)
                           ->setSection($sectionId)                          
@@ -532,6 +532,7 @@ class Course {
                         $objSubmission->grade = $this->getGrade($sectionId, $assignmentId, $enrollments[$member->uid]);
                         $objSubmission->comment = $this->getComments($sectionId, $assignmentId, $enrollments[$member->uid]);                                                
                         $files[] = $objSubmission;
+												}
                 }
             }
         }
