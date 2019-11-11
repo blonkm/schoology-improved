@@ -59,6 +59,7 @@ $menuItems = [
   'matrix' => ['submissions', 'download assignment files'],
   'attendance' => ['attendance', 'display attendance last week'],
   '' => ['',''],
+  'reload' => ['reload', 'reload current page data from Schoology'], 
   'import' => ['import', 'upload and import csv file'],
   'clean' => ['clean', 'delete all temporary files from server'],
   'create' => ['create', 'create all groups. Careful!'],
@@ -102,7 +103,7 @@ require_once('controller.php');
             ?><li><h3>Admin</h3><li><?
           }
           else {
-            ?><li><a class="button <?=isMenuActive($action, $link)?>" href="groups.php?section=<?=$sectionInfo->id?>&action=<?=$link?>" title="<?=$info[1]?>"><?=$info[0]?></a></li><?
+            ?><li><a id="<?=$link?>Button" class="button <?=isMenuActive($action, $link)?>" href="groups.php?section=<?=$sectionInfo->id?>&action=<?=$link?>" title="<?=$info[1]?>"><?=$info[0]?></a></li><?
           }
         }?>
 			</ul>
@@ -261,8 +262,6 @@ require_once('controller.php');
                 <p><a href="?section=<?=$section?>&assignment=<?=$assignment?>&group=<?=urlencode($group)?>&action=download">download files</a> 
                 | 
                 <a href="?section=<?=$section?>&assignment=<?=$assignment?>&action=download">download files of all groups</a> 
-                |
-                <a href="?<?=http_build_query(array_merge($_GET, array('cache'=>'no')))?>">reload</a>   
                 </p><?
             break;
         case 'user':
@@ -329,6 +328,8 @@ require_once('controller.php');
                 <?=$source?>
             </div>
             <?
+            break;
+        case 'reload':
             break;
         case 'create':
             echo "groups created";
