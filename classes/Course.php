@@ -28,6 +28,7 @@ class Course {
     private $_apiCallCount = 0;
     private $_cache;
     private $_timer;
+    private $_followRedirects = false;
     
     function __construct() {
       $this->_timer = new Timer(true);
@@ -110,7 +111,10 @@ class Course {
       if (!$resource) {
         $schoology = $this->app();
         $this->_timer->throttle();
-        $resource = $schoology->api($url, $method);
+        if ($this->_followRedirects == true)
+					$resource = $schoology->apiResult($url, $method);
+				else
+					$resource = $schoology->api($url, $method);
         $this->_timer->setStartTime();
         $this->_apiCallCount++;
         $this->saveResource($url, $resource, $expires);
@@ -220,6 +224,23 @@ class Course {
         $userInfo = $response->result;
         return $userInfo;    
     }
+
+    /** 
+     *  Get User Info by School Student ID
+     *  @param userId, the school system ID
+     *  @returns the user object
+     */    
+    function getUserInfoBySchoolId($userId) {
+        $url = 'users/ext/{id}';
+        $url = str_replace('{id}', strtoupper($userId), $url);
+        // do the call, and follow redirects
+        // which we normally don't (since it's easier)
+        $this->_followRedirects = true;
+        $response = $this->api($url);
+        $this->_followRedirects = false;
+        $userInfo = $response;
+        return $userInfo;    
+    }
     
     /** 
      *  Get User Last Login Info
@@ -246,13 +267,14 @@ class Course {
      *  @returns the user object
      */    
     function getAnalytics($sectionId) {
-        $url = 'analytics/highlights/sections/{section_id}?limit=' . self::LIMIT;
+        $url = 'analytics/highlights/sections/{section_id}';
         $url = str_replace('{section_id}', $sectionId, $url);
 
         // do the call
         $response = $this->api($url);
         $result = $response->result;
         $analytics = [];
+
         foreach ($result->highlights as $login) {
             $analytics[$login->uid] = $login->last_login;            
         }
@@ -519,19 +541,20 @@ class Course {
             $response = $this->api($url, '+1 minute');
             foreach ($response->result->revision as $revision) { 
                 foreach ($revision->attachments->files as $downloads) {      
-                        $file = current($downloads);                          
-                        $objSubmission = (new Submission)
-                          ->setId($file->id)
-                          ->setSection($sectionId)                          
-                          ->setCourse($this)
-                          ->setFile($file)
-                          ->setAssignment($assignmentId)
-                          ->setMember($member)
-                          ->setRevision($revision)
-                          ->setFilename();
-                        $objSubmission->grade = $this->getGrade($sectionId, $assignmentId, $enrollments[$member->uid]);
-                        $objSubmission->comment = $this->getComments($sectionId, $assignmentId, $enrollments[$member->uid]);                                                
-                        $files[] = $objSubmission;
+                        foreach ($downloads as $file) {                          
+													$objSubmission = (new Submission)
+														->setId($file->id)
+														->setSection($sectionId)                          
+														->setCourse($this)
+														->setFile($file)
+														->setAssignment($assignmentId)
+														->setMember($member)
+														->setRevision($revision)
+														->setFilename();
+													$objSubmission->grade = $this->getGrade($sectionId, $assignmentId, $enrollments[$member->uid]);
+													$objSubmission->comment = $this->getComments($sectionId, $assignmentId, $enrollments[$member->uid]);                                                
+													$files[] = $objSubmission;
+												}
                 }
             }
         }
@@ -628,7 +651,7 @@ class Course {
     
     // create a zip file containing a specific
     // list of files from all or one group for an assignment 
-    function download($section, $member, $assignment, $group) {
+    function download($section, $member, $assignment = null, $group = null) {
         $downloads = 'downloads/';
         $folder = '';
         $zipFile = '';
