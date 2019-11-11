@@ -150,10 +150,10 @@ switch (strtolower($action)) {
         echo "uniqueid,username,group,first,last\n";
         foreach ($users as $user) {
             $out = $user->info->uid . ',' . $user->username . ',' . $user->group . ',' . $user->first_name . ',' . $user->last_name . "\n";
-/*            if (strtolower($action) == 'excel')
+            if (strtolower($action) == 'excel')
                 echo mb_convert_encoding($out, 'UTF-16LE', 'UTF-8');
             else
-*/                echo $out;
+                echo $out;
         }
         die();
         break;  
@@ -162,10 +162,22 @@ switch (strtolower($action)) {
         break;
 	case 'upload':
 		$data = $course->uploadMembersCsv();
-		//dump($csv);
 		$import = $course->importCsv($section, $data);
 		break;
-    default:
+	case 'getid':
+		try {
+			header('Content-Type: application/json');   
+			header('Access-Control-Allow-Origin: *');
+			$member = $course->getUserInfoBySchoolId($userid);
+		}
+		catch(Exception $e) {
+			http_response_code(500);
+			die();
+		}
+		echo json_encode(['id'=>$member->id]);
+		//echo $member->id;
+	  die(); // ajax, no more output      	
+  default:
         // nothing here
 }
 
