@@ -25,11 +25,12 @@ class Timer {
   
   private function getTime() {
     $time = microtime();
-    if ($this->_useMicroSeconds)
-      return $time;
     $time = explode(' ', $time);
-    $time = $time[1] + $time[0];
-    return $time;
+    $time = (double)$time[1] + (double)$time[0];
+    if ($this->_useMicroSeconds)
+      return $time * pow(10, 6);
+    else
+			return $time;
   }
   
   // throttle at n per second
@@ -55,7 +56,7 @@ class Timer {
   public function throttle() {
     if ($this->_throttleRate == 0)
       return;
-    $million = 1000.0 * 1000.0;
+    $million = pow(10.0, 6);
     $precision = $this->_useMicroSeconds?$million:1.0;
     $delayFunction = $this->_useMicroSeconds?'usleep':'sleep';
     $delay = $precision / $this->_throttleRate; // in (micro)seconds
