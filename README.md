@@ -22,7 +22,7 @@ The basic functionality is in a class called 'Course'. You will be able to retri
 ## How to use the project
 
 ### Step 1: prerequisites
-You will need a server capable of running PHP. It will also need ZipArchive enabled, which is available as of PHP 5.2.0
+You will need a server capable of running PHP. It will also need ZipArchive enabled, which is available as of PHP 5.2.0. You will also need to request an API code from Schoology support.
 
 ### Step 1: setup folders
 - Download the files from this project (schoology sdk is included)

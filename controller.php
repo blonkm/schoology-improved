@@ -107,6 +107,7 @@ switch (strtolower($action)) {
             die(); // no more response, we're downloading a zip file            
         break;
     case 'download':
+        $course->purgeDownloads();
         $pageTitle = "Downloading submissions of assignment " . $assignment;
         $files = $course->listFilesOfGroupMembers($section, $group, $assignment);
         $assignments = $course->getSectionAssignments($section, Course::STATUS_ALL);
@@ -145,13 +146,14 @@ switch (strtolower($action)) {
         header("Content-Disposition: attachment; filename=file.csv");
         header("Pragma: no-cache");
         header("Expires: 0");
+        echo "\xEF\xBB\xBF";
         echo "uniqueid,username,group,first,last\n";
         foreach ($users as $user) {
             $out = $user->info->uid . ',' . $user->username . ',' . $user->group . ',' . $user->first_name . ',' . $user->last_name . "\n";
-            if (strtolower($action) == 'excel')
+/*            if (strtolower($action) == 'excel')
                 echo mb_convert_encoding($out, 'UTF-16LE', 'UTF-8');
             else
-                echo $out;
+*/                echo $out;
         }
         die();
         break;  

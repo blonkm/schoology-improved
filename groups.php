@@ -278,7 +278,15 @@ require_once('controller.php');
                 <th><i class="fa fa-comment" aria-hidden="true"></i></th>
             </tr>
             <?
-                foreach ($files as $file) { ?>
+								$prevAssignmentId = null;
+                foreach ($files as $file) {
+									if ($file->assignmentId == $prevAssignmentId) { ?>
+									<tr>
+										<td colspan="5"></td>
+										<td><a href="<?=$file->url?>"><?=$file->name?></a></td>
+										<td></td>
+									</tr>
+                 <? } else { ?>
                 <tr>
                     <td><?=$assignments[$file->assignmentId]?></td>
                     <td class="numeric"><?=$file->revision?></td>          
@@ -288,6 +296,9 @@ require_once('controller.php');
                     <td><a href="<?=$file->url?>"><?=$file->name?></a></td>
                     <td><i title="<?=$file->comment?>" class="fa <?=$file->comment!=''?'fa-comment':''?>" aria-hidden="true"></i></td>
                 </tr>
+                <? }
+                $prevAssignmentId  = $file->assignmentId;
+                ?>
             <?
             }
             ?></table>
