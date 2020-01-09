@@ -79,6 +79,7 @@ require_once('controller.php');
     <link rel="stylesheet" href="styles/styles.css">
     <link rel="stylesheet" href="styles/nav.css">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link href="//cdn.jsdelivr.net/npm/zoom-vanilla.js/dist/zoom.css" rel="stylesheet">
     <script src="scripts/main.js"></script>
 </head>
 <body>
@@ -161,7 +162,7 @@ require_once('controller.php');
                 if ($filter==true or $filter=='none') { ?>
                 <tr>
                     <?if ($action=='pictures' or $action=='groups'){ ?>
-                    <td><img src="<?=$user->info->picture_url?>" width="80" /></td>
+                    <td><img src="<?=$user->info->picture_url?>" data-action="zoom" width="80" /></td>
                     <?}?>
                     <td><?=$user->group?></td>
                     <td><a href="/schoology/groups.php?section=<?=$section?>&userid=<?=$user->info->uid?>&action=user"><?=$user->username?></a></td>
@@ -374,5 +375,6 @@ require_once('controller.php');
 
   </div>
 </section>
+<script src="//cdn.jsdelivr.net/npm/zoom-vanilla.js/dist/zoom-vanilla.min.js"></script>
 </body>
 </html>
