@@ -1,0 +1,6 @@
+/nbproject/private/
+config/.api_key
+config/.api_secret
+api.sqlite
+nbproject/project.properties
+nbproject/project.xml
