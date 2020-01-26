@@ -95,7 +95,8 @@ require_once('controller.php');
     <?}?>
     
 <section class="container">
-  <div class="left-half">
+  <? if (!empty($section)) { ?>
+    <div class="left-half">
     <nav>
       <ul class="vertical-list">
         <? 
@@ -110,6 +111,7 @@ require_once('controller.php');
 			</ul>
     </nav>
   </div>
+  <? } ?>
   <div class="right-half">
     <?
     $action = strtolower($action);
