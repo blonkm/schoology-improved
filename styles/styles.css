@@ -80,7 +80,7 @@ header {
     position: relative;
     z-index: 11;
     border-bottom: 1px solid #22303e;
-    background: #44505d url('https://cdn3-5.cdn.schoology.com/sites/all/themes/schoology_theme/images/header-home.png?7246') no-repeat 10px 10px;
+    background: #44505d url(images/header-home.png) no-repeat 10px 10px;
 }
 
 #course-logo {
