@@ -355,10 +355,10 @@ require_once('controller.php');
 					<li>group name</li>
 					<li>first  name (optional)</li>
 					<li>last name</li>
-				  </oL
+                                  </ol>
   			  </li>
             </ul>
-            <form "frmImport" action="groups.php?section=<?=$section?>&action=upload" method="post" enctype="multipart/form-data">
+            <form name="frmImport" action="groups.php?section=<?=$section?>&action=upload" method="post" enctype="multipart/form-data">
               <div class="upload-btn-wrapper">
                 <button class="btn" form="frmImport">Select a file</button>
                 <input type="file" name="upload" accept=".csv" onchange="showSelectedFile(this.value)"/>
