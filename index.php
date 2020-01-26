@@ -11,6 +11,4 @@ function redirect($url, $permanent = false)
   }
     exit();
 }
-
-redirect('/schoology/groups.php?action=courses', false);
-?>
+redirect('./groups.php?action=courses', false);
