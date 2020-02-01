@@ -1,7 +1,8 @@
 <?
+
 function import() {
   if (!isset($_FILES)) {
-	echo 'nothing to upload';
+    echo 'nothing to upload';
     die();
   }
 
@@ -18,7 +19,7 @@ function import() {
   $uploadOk = true;
 
   // Check if the file is a csv file
-  $check = filesize($tempName);  
+  $check = filesize($tempName);
 
   $csv_mimetypes = array(
       'text/csv',
@@ -40,27 +41,28 @@ function import() {
 
   // Check if file already exists
   if (file_exists($target_file)) {
-      echo "Sorry, file already exists.";
-      $uploadOk = false;
+    echo "Sorry, file already exists.";
+    $uploadOk = false;
   }
 
   // Check file size
   if ($fileSize > 500000) {
-      echo "Sorry, your file is too large.";
-      $uploadOk = false;
+    echo "Sorry, your file is too large.";
+    $uploadOk = false;
   }
 
   // Check if $uploadOk is set to 0 by an error
   if (!$uploadOk) {
-      echo "Sorry, your file was not uploaded.";
-  // if everything is ok, try to upload file
+    echo "Sorry, your file was not uploaded.";
+    // if everything is ok, try to upload file
   } else {
-      if (move_uploaded_file($tempName, $target_file)) {
-          echo "The file ". basename($fileName). " has been uploaded.";
-      } else {
-          echo "Sorry, there was an error uploading your file.";
-      }
+    if (move_uploaded_file($tempName, $target_file)) {
+      echo "The file " . basename($fileName) . " has been uploaded.";
+    } else {
+      echo "Sorry, there was an error uploading your file.";
+    }
   }
 }
+
 import();
 ?>

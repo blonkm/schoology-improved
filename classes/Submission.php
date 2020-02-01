@@ -1,5 +1,7 @@
 <?
+
 class Submission {
+
   public $grade;
   public $comment;
   public $member;
@@ -18,12 +20,12 @@ class Submission {
   public $course;
   public $sectionId;
   public $id;
-  
+
   public function setCourse($course) {
     $this->course = $course;
     return $this;
   }
-  
+
   public function setSection($id) {
     $this->sectionId = $id;
     return $this;
@@ -31,7 +33,7 @@ class Submission {
 
   public function setFile($file) {
     $this->file = $file;
-    $this->apiUrl = (new Filesystem)->removeBase(Course::API_BASE, $file->download_path);   
+    $this->apiUrl = (new Filesystem)->removeBase(Course::API_BASE, $file->download_path);
     $this->url = "?section=" . $this->sectionId . "&submission=" . $this->id . "&action=file";
     $this->name = $file->title;
     $this->datetime = date(Course::DATETIME_FORMAT, $file->timestamp);
@@ -44,7 +46,7 @@ class Submission {
   }
 
   public function setAssignment($assignment) {
-    $this->assignmentId = $assignment;    
+    $this->assignmentId = $assignment;
     return $this;
   }
 
@@ -58,7 +60,7 @@ class Submission {
 
   public function setRevision($revision) {
     $this->revision = $revision->revision_id;
-    $MB = 1024*1024;
+    $MB = 1024 * 1024;
     $this->size = round($revision->attachments->files->file[0]->filesize / $MB, 1);
     return $this;
   }
@@ -69,11 +71,13 @@ class Submission {
     $sanitized = (new Filesystem)->sanitize($fileName);
     $this->saveAs = $sanitized;
     return $this;
-  }  
-  
+  }
+
   public function setId($id) {
     $this->id = $id;
     return $this;
   }
+
 }
+
 ?>

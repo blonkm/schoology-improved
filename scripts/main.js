@@ -1,39 +1,39 @@
-(function() {
-  function showSelectedFile(path) {
-      var backslash = path.lastIndexOf("\\");
-      var filename = path.substr(backslash + 1);
-      var message = document.getElementById('selectedFile');
-      message.innerHTML = 'selected: ' + filename;
-      message.className = 'filename';        
-  }
-
-  function domReady(fn) {
-    // If we're early to the party
-    document.addEventListener("DOMContentLoaded", fn);
-    // If late; I mean on time.
-    if (document.readyState === "interactive" || document.readyState === "complete" ) {
-      fn();
+(function () {
+    function showSelectedFile(path) {
+        var backslash = path.lastIndexOf("\\");
+        var filename = path.substr(backslash + 1);
+        var message = document.getElementById('selectedFile');
+        message.innerHTML = 'selected: ' + filename;
+        message.className = 'filename';
     }
-  }
 
-  function reloadFromAPI(event) {
-    event.preventDefault();
-    this.innerText = "busy...";
-    document.body.style.cursor = 'wait';
-    fetch(location.href + '&cache=no').then(function (response) {
-      console.log('success!', response);
-      location.reload();
-    }).catch(function (err) {
-      alert('failed to reload');
-      this.innerText = "reload";
-      console.warn('Something went wrong.', err);
-      document.body.style.cursor = 'default';
+    function domReady(fn) {
+        // If we're early to the party
+        document.addEventListener("DOMContentLoaded", fn);
+        // If late; I mean on time.
+        if (document.readyState === "interactive" || document.readyState === "complete") {
+            fn();
+        }
+    }
+
+    function reloadFromAPI(event) {
+        event.preventDefault();
+        this.innerText = "busy...";
+        document.body.style.cursor = 'wait';
+        fetch(location.href + '&cache=no').then(function (response) {
+            console.log('success!', response);
+            location.reload();
+        }).catch(function (err) {
+            alert('failed to reload');
+            this.innerText = "reload";
+            console.warn('Something went wrong.', err);
+            document.body.style.cursor = 'default';
+        });
+        return false;
+    }
+
+    domReady(function () {
+        var reloadButton = document.getElementById("reloadButton");
+        reloadButton.addEventListener('click', reloadFromAPI, false);
     });
-    return false;
-  }
-
-  domReady( function() {
-    var reloadButton = document.getElementById("reloadButton");
-    reloadButton.addEventListener('click', reloadFromAPI, false);
-  });
 })();

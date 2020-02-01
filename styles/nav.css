@@ -45,7 +45,7 @@
 }
 .vertical-list .button:active,
 .vertical-list .active
- {
+{
     padding: 5px 12px;
     top: 0;
     background: linear-gradient(90deg, #515B62 3%, #444E55 5%, #394147 100%); 

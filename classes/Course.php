@@ -6,8 +6,6 @@
  *  @author Michiel van der Blonk (blonkm@gmail.com)
  *  @date 2017-11-24
  */
- 
- 
 class Course {
 
   const API_BASE = 'https://api.schoology.com/v1';
@@ -160,7 +158,7 @@ class Course {
     $result = $response->result;
     $courses = [];
     foreach ($result->course as $course) {
-      $sections = $this->getSections((string)$course->id);
+      $sections = $this->getSections((string) $course->id);
       $addSection = $onlyActive == true && count($sections->section) > 0;
       if ($withSections && $addSection) {
         $course->sections = $sections->section;
@@ -208,7 +206,7 @@ class Course {
       $isSelectedStatus = $assignment->completion_status == $statusAsText || $completionStatus == self::STATUS_ALL;
       $isSelectedCategory = ($assignment->grading_category == $category) || is_null($category);
       if ($isSelectedStatus && $isSelectedCategory) {
-        $assignments[(string)$assignment->id] = $assignment->title;
+        $assignments[(string) $assignment->id] = $assignment->title;
       }
     }
     return $assignments;
@@ -280,7 +278,7 @@ class Course {
     $analytics = [];
 
     foreach ($result->highlights as $login) {
-      $analytics[(string)$login->uid] = $login->last_login;
+      $analytics[(string) $login->uid] = $login->last_login;
     }
     return $analytics;
   }
@@ -316,7 +314,7 @@ class Course {
       $enrollments[$key] = array();
       foreach ($users as $user) {
         if (array_key_exists($user, $lookup))
-          $enrollments[(string)$key][] = $lookup[$user];
+          $enrollments[(string) $key][] = $lookup[$user];
         else {
           $userInfo = $this->getUserInfo($user);
           $first = $userInfo->name_first;
@@ -361,9 +359,9 @@ class Course {
     $members = $response->result;
     foreach ($members->enrollment as $enrollment) {
       if ($asObject) {
-        $userList[(string)$enrollment->uid] = $enrollment;
+        $userList[(string) $enrollment->uid] = $enrollment;
       } else {
-        $userList[(string)$enrollment->uid] = $enrollment->id;
+        $userList[(string) $enrollment->uid] = $enrollment->id;
       }
     }
     return $userList;
@@ -459,9 +457,9 @@ class Course {
 
     foreach ($response->result->grading_groups as $id => $group) {
       foreach ($group->members as $key => $member) {
-        $memberIdAsString = number_format($member,0,'.','');
-        if (array_key_exists((string)$member, $members)) {
-          $response->result->grading_groups[$id]->members[(string)$key] = $this->getUserInfo($members[(string)$member]);
+        $memberIdAsString = number_format($member, 0, '.', '');
+        if (array_key_exists((string) $member, $members)) {
+          $response->result->grading_groups[$id]->members[(string) $key] = $this->getUserInfo($members[(string) $member]);
         }
       }
     }
@@ -510,7 +508,7 @@ class Course {
     // add member info
     foreach ($response->result->grading_groups as $id => $group) {
       foreach ($group->members as $key => $member) {
-        $response->result->grading_groups[$id]->members[$key] = $this->getUserInfo($members[(string)$member]);
+        $response->result->grading_groups[$id]->members[$key] = $this->getUserInfo($members[(string) $member]);
       }
     }
 
@@ -524,7 +522,7 @@ class Course {
 
     $categoryList = array();
     foreach ($response->result->grading_category as $category) {
-      $categoryList[(string)$category->id] = $category->title;
+      $categoryList[(string) $category->id] = $category->title;
     }
 
     return $categoryList;
@@ -547,7 +545,7 @@ class Course {
         foreach ($revision->attachments->files as $downloads) {
           foreach ($downloads as $file) {
             $objSubmission = (new Submission)
-                    ->setId((string)$file->id)
+                    ->setId((string) $file->id)
                     ->setSection($sectionId)
                     ->setCourse($this)
                     ->setFile($file)
@@ -555,8 +553,8 @@ class Course {
                     ->setMember($member)
                     ->setRevision($revision)
                     ->setFilename();
-            $objSubmission->grade = $this->getGrade($sectionId, $assignmentId, $enrollments[(string)$member->uid]);
-            $objSubmission->comment = $this->getComments($sectionId, $assignmentId, $enrollments[(string)$member->uid]);
+            $objSubmission->grade = $this->getGrade($sectionId, $assignmentId, $enrollments[(string) $member->uid]);
+            $objSubmission->comment = $this->getComments($sectionId, $assignmentId, $enrollments[(string) $member->uid]);
             $files[] = $objSubmission;
           }
         }
@@ -599,8 +597,8 @@ class Course {
                       ->setMember($member)
                       ->setRevision($revision)
                       ->setFilename();
-              $objSubmission->grade = $this->getGrade($sectionId, $assignmentId, $enrollments[(string)$member->uid]);
-              $objSubmission->comment = $this->getComments($sectionId, $assignmentId, $enrollments[(string)$member->uid]);
+              $objSubmission->grade = $this->getGrade($sectionId, $assignmentId, $enrollments[(string) $member->uid]);
+              $objSubmission->comment = $this->getComments($sectionId, $assignmentId, $enrollments[(string) $member->uid]);
 
               $files[] = $objSubmission;
             }
@@ -634,7 +632,7 @@ class Course {
   function savePortfolio($files, $member, $assignments) {
     $downloadsFolder = 'downloads';
     foreach ($files as $file) {
-      $filename = str_replace(' ', '-', $assignments[(string)$file->assignmentId] . '-' . $file->last_name . '-' . $file->first_name . '-' . $file->userId . '-' . $file->revision . '-' . $file->name);
+      $filename = str_replace(' ', '-', $assignments[(string) $file->assignmentId] . '-' . $file->last_name . '-' . $file->first_name . '-' . $file->userId . '-' . $file->revision . '-' . $file->name);
       $sanitized_filename = iconv("UTF-8", "ISO-8859-1//TRANSLIT", $filename);
       $userFolder = str_replace(' ', '-', $downloadsFolder . '/' . strtoupper($member->username) . '-' . $member->name_last . '-' . $member->name_first);
       (new Filesystem)->mkdir($userFolder);
@@ -724,7 +722,7 @@ class Course {
   function purgeDownloads() {
     $downloadsFolder = realpath('downloads');
     if (!$downloadsFolder)
-       return;
+      return;
     $objFilesystem = new Filesystem;
     $objFilesystem->deleteFiles($downloadsFolder);
     $this->_errors = $objFilesystem->getErrors();
