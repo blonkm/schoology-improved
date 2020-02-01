@@ -164,7 +164,7 @@ require_once('controller.php');
                                   <td><img src="<?= $user->info->picture_url ?>" data-action="zoom" width="80" /></td>
                                 <? } ?>
                                 <td><?= $user->group ?></td>
-                                <td><a href="/schoology/groups.php?section=<?= $section ?>&userid=<?= $user->info->uid ?>&action=user"><?= $user->username ?></a></td>
+                                <td><a href="groups.php?section=<?= $section ?>&userid=<?= $user->info->uid ?>&action=user"><?= $user->username ?></a></td>
                                 <td><?= $user->first_name ?></td>
                                 <td><?= $user->last_name ?></td>
         <? if ($action == 'attendance') { ?>
@@ -246,7 +246,7 @@ require_once('controller.php');
     <? foreach ($files as $file) { ?>
                           <tr>
                               <td><?= $file->group ?></td>
-                              <td><a target="_blank" href="/schoology/groups.php?section=<?= $section ?>&userid=<?= $file->member->uid ?>&action=user"><?= $file->userId ?></a></td>
+                              <td><a target="_blank" href="groups.php?section=<?= $section ?>&userid=<?= $file->member->uid ?>&action=user"><?= $file->userId ?></a></td>
                               <td><?= $file->first_name ?></td>
                               <td><?= $file->last_name ?></td>          
                               <td class="numeric"><?= $file->revision ?></td>          

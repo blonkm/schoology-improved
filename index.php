@@ -6,7 +6,7 @@ function redirect($url, $permanent = false) {
   } else {
     echo "Headers already sent in $filename on line $linenum\n" .
     "Cannot redirect, for now please click this <a " .
-    "href=\"/schoology/groups.php?action=courses\">link</a> instead\n";
+    "href=\"groups.php?action=courses\">link</a> instead\n";
   }
   exit();
 }
