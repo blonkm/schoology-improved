@@ -723,6 +723,8 @@ class Course {
 
   function purgeDownloads() {
     $downloadsFolder = realpath('downloads');
+    if (!$downloadsFolder)
+       return;
     $objFilesystem = new Filesystem;
     $objFilesystem->deleteFiles($downloadsFolder);
     $this->_errors = $objFilesystem->getErrors();
