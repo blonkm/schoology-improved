@@ -32,8 +32,15 @@
         return false;
     }
 
+    function initSort() {
+        Array.from(document.querySelectorAll('.sortedTable')).forEach(function(table) {
+          var sort = new Tablesort(table);         
+        });        
+    }
+    
     domReady(function () {
         var reloadButton = document.getElementById("reloadButton");
         reloadButton.addEventListener('click', reloadFromAPI, false);
+        initSort();
     });
 })();

@@ -78,8 +78,14 @@ require_once('controller.php');
         <link rel="stylesheet" href="styles/styles.css">
         <link rel="stylesheet" href="styles/nav.css">
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+        <link rel="stylesheet" href="styles/tablesort.css">
         <link href="//cdn.jsdelivr.net/npm/zoom-vanilla.js/dist/zoom.css" rel="stylesheet">
         <script src="scripts/main.js"></script>
+        <script src='scripts/tablesort.min.js'></script>
+
+        <!-- Include sort types you need -->
+        <script src='scripts/sorts/tablesort.number.min.js'></script>
+        <script src='scripts/sorts/tablesort.date.min.js'></script>       
     </head>
     <body>
         <header>&nbsp;</header>
@@ -136,7 +142,8 @@ require_once('controller.php');
                           case 'list':
                           case 'attendance':
                             ?>
-                    <table>
+                    <table class="sortedTable">
+                      <thead>
                         <tr>
                     <? if ($action == 'pictures' or $action == 'groups') { ?>
                               <th>Picture</th>
@@ -152,6 +159,8 @@ require_once('controller.php');
                               <th>Lesson</th>
     <? } ?>
                         </tr>
+                      </thead>
+                      <tbody>
     <?
     foreach ($users as $user) {
       $filter = 'none';
@@ -177,6 +186,7 @@ require_once('controller.php');
                               <? }
                             }
                             ?>
+                      </tbody>
                     </table><?
                         break;
                       case 'matrix':
@@ -205,12 +215,15 @@ require_once('controller.php');
                         </form>
                     </nav>
                     <br/>
-                    <table id="matrix">
+                    <table class="sortedTable" id="matrix">
+                      <thead>
                         <tr>
                             <th>Group</th>
     <? foreach ($assignments as $assignment) { ?>
                               <th><?= $assignment ?></th>
                             <? } ?>
+                      </thead>
+                      <tbody>
                             <? foreach ($groups as $group => $groupId) { ?>
                           <tr>
                               <td><a href="groups.php?section=<?= $section ?>&action=groups&group=<?= $group ?>"><?= $group ?></a></td><? foreach ($assignments as $id => $assignment) { ?>
@@ -218,6 +231,7 @@ require_once('controller.php');
                               <? } ?>
                           </tr>
                             <? } ?>
+                      </tbody>
                     </table>
                         <?
                         break;
@@ -230,7 +244,8 @@ require_once('controller.php');
                         <? } ?>
                         for group <?= $group ?>
                     </h3>
-                    <table>
+                    <table class="sortedTable">
+                      <thead>
                         <tr>
                             <th>Group</th>
                             <th>Username</th>
@@ -243,6 +258,8 @@ require_once('controller.php');
                             <th>File</th>
                             <th><i class="fa fa-comment" aria-hidden="true"></i></th>
                         </tr>
+                      </thead>
+                      <tbody>
     <? foreach ($files as $file) { ?>
                           <tr>
                               <td><?= $file->group ?></td>
@@ -258,7 +275,9 @@ require_once('controller.php');
                           </tr>
       <?
     }
-    ?></table>
+    ?>
+                      </tbody>
+                    </table>
                     <p><a href="?section=<?= $section ?>&assignment=<?= $assignment ?>&group=<?= urlencode($group) ?>&action=download">download files</a> 
                         | 
                         <a href="?section=<?= $section ?>&assignment=<?= $assignment ?>&action=download">download files of all groups</a> 
@@ -266,7 +285,8 @@ require_once('controller.php');
                     break;
                   case 'user':
                     ?><h3 id="user-title"><?= $first ?> <?= $last ?> (<?= $schoolId ?>)</h3>
-                    <table>
+                    <table class="sortedTable">
+                      <thead>
                         <tr>
                             <th>Assignment</th>
                             <th>Revision</th>
@@ -276,6 +296,8 @@ require_once('controller.php');
                             <th>File</th>
                             <th><i class="fa fa-comment" aria-hidden="true"></i></th>
                         </tr>
+                      </thead>
+                      <tbody>
     <?
     $prevAssignmentId = null;
     foreach ($files as $file) {
@@ -302,7 +324,9 @@ require_once('controller.php');
       ?>
                           <?
                         }
-                        ?></table>
+                        ?>
+                      </tbody>
+                    </table>
                     <p><a href="?section=<?= $section ?>&userid=<?= $userid ?>&action=portfolio">download files</a></p>
                     <?
                     break;
@@ -376,5 +400,8 @@ $course->showErrors();
             </div>
         </section>
         <script src="//cdn.jsdelivr.net/npm/zoom-vanilla.js/dist/zoom-vanilla.min.js"></script>
+        <script>
+
+        </script>         
     </body>
 </html>
