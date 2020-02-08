@@ -123,7 +123,7 @@ switch (strtolower($action)) {
     $pageTitle = "Downloading submissions of assignment " . $assignment;
     $files = $course->listFilesOfGroupMembers($section, $group, $assignment);
     $assignments = $course->getSectionAssignments($section, Course::STATUS_ALL);
-    $course->saveAttachments($files, $assignments[$assignment]);
+    $course->saveAttachments($files, $assignment);
     $filesSaved = true;
     if ($course->download($section, null, $assignments[$assignment], $group))
       die(); // no more response, we're downloading a zip file            
