@@ -34,7 +34,20 @@ class Submission {
   public function setFile($file) {
     $this->file = $file;
     $this->apiUrl = (new Filesystem)->removeBase(Course::API_BASE, $file->download_path);
-    $this->url = "?section=" . $this->sectionId . "&submission=" . $this->id . "&action=file";
+    $this->url = "?";
+    if (!empty($this->sectionId)) {
+      $this->url .= "section=" . $this->sectionId;
+    }
+    if (!empty($this->id)) {
+      $this->url .= "&submission=" . $this->id;
+    }
+    if (!empty($this->assignmentId)) {
+      $this->url .= "&assignment=" . $this->assignmentId;
+    }
+    if (!empty($this->userId)) {
+      $this->url .= "&userid=" . $this->member->uid;
+    }
+    $this->url .= "&action=file";
     $this->name = $file->title;
     $this->datetime = date(Course::DATETIME_FORMAT, $file->timestamp);
     return $this;
@@ -66,7 +79,7 @@ class Submission {
   }
 
   public function setFileName() {
-    $fileNameParts = [$this->last_name, $this->first_name, $this->userId, $this->revision, $this->name];
+    $fileNameParts = [$this->group, $this->last_name, $this->first_name, $this->userId, $this->revision, $this->name];
     $fileName = join(' ', $fileNameParts);
     $sanitized = (new Filesystem)->sanitize($fileName);
     $this->saveAs = $sanitized;

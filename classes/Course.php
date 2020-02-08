@@ -111,6 +111,7 @@ class Course {
     if (!$resource) {
       $schoology = $this->app();
       $this->_timer->throttle();
+      $url = str_replace('//','/',$url);      
       if ($this->_followRedirects == true)
         $resource = $schoology->apiResult($url, $method);
       else
@@ -534,7 +535,7 @@ class Course {
     $assignments = $this->getSectionAssignments($sectionId);
     $enrollments = $this->listMembers($sectionId);
     $files = array();
-
+    
     foreach ($assignments as $assignmentId => $assignmentTitle) {
       $url = 'sections/{section_id}/submissions/{grade_item_id}/{user_id}/revisions?with_attachments=1';
       $url = str_replace('{section_id}', $sectionId, $url);
@@ -548,9 +549,9 @@ class Course {
                     ->setId((string) $file->id)
                     ->setSection($sectionId)
                     ->setCourse($this)
-                    ->setFile($file)
                     ->setAssignment($assignmentId)
                     ->setMember($member)
+                    ->setFile($file)
                     ->setRevision($revision)
                     ->setFilename();
             $objSubmission->grade = $this->getGrade($sectionId, $assignmentId, $enrollments[(string) $member->uid]);
@@ -563,69 +564,87 @@ class Course {
     return $files;
   }
 
+  // list properties of one file
+  function listFilesOfGroupMember($sectionId, $groupName, $member, $assignmentId) {
+    $files = [];
+//    $groups = $this->listGradingGroupMembers($sectionId, $groupName);
+    $enrollments = $this->listMembers($sectionId);
+    
+    $url = 'sections/{section_id}/submissions/{grade_item_id}/{user_id}/revisions?with_attachments=1';
+    $url = str_replace('{section_id}', $sectionId, $url);
+    $url = str_replace('{grade_item_id}', $assignmentId, $url);
+    $url = str_replace('{user_id}', $member->uid, $url);   
+    $response = $this->api($url, '+10 seconds');
+    // check for failing api call
+    if (!is_object($response->result)) {
+      return [];
+    }
+
+    foreach ($response->result->revision as $revision) {
+      foreach ($revision->attachments->files as $downloads) {
+        foreach ($downloads as $download) {
+          $file = $download;
+          $objSubmission = (new Submission)
+                  ->setId($download->id)
+                  ->setSection($sectionId)
+                  ->setCourse($this)
+                  ->setAssignment($assignmentId)
+                  ->setGroup($groupName)
+                  ->setFile($file)
+                  ->setMember($member)
+                  ->setRevision($revision)
+                  ->setFilename();
+          $objSubmission->grade = $this->getGrade($sectionId, $assignmentId, $enrollments[(string) $member->uid]);
+          $objSubmission->comment = $this->getComments($sectionId, $assignmentId, $enrollments[(string) $member->uid]);
+
+          $files[] = $objSubmission;
+        }
+      }
+    }
+    return $files;
+  }
+  
   // make an array of submissions
   // of an assignment for each member of the group
   function listFilesOfGroupMembers($sectionId, $groupName, $assignmentId) {
     // get members
     $groups = $this->listGradingGroupMembers($sectionId, $groupName);
-    $enrollments = $this->listMembers($sectionId);
 
     // get submissions per member
     $files = array();
     $users = [];
     foreach ($groups as $group)
       foreach ($group->members as $member) {
-        $url = 'sections/{section_id}/submissions/{grade_item_id}/{user_id}/revisions?with_attachments=1';
-        $url = str_replace('{section_id}', $sectionId, $url);
-        $url = str_replace('{grade_item_id}', $assignmentId, $url);
-        $url = str_replace('{user_id}', $member->uid, $url);
-        $response = $this->api($url, '+10 seconds');
-        // check for failing api call
-        if (!is_object($response->result))
-          continue;
-        foreach ($response->result->revision as $revision) {
-          foreach ($revision->attachments->files as $downloads) {
-            foreach ($downloads as $download) {
-              $file = $download;
-              $objSubmission = (new Submission)
-                      ->setId($download->id)
-                      ->setSection($sectionId)
-                      ->setCourse($this)
-                      ->setFile($file)
-                      ->setGroup($groupName)
-                      ->setAssignment($assignmentId)
-                      ->setMember($member)
-                      ->setRevision($revision)
-                      ->setFilename();
-              $objSubmission->grade = $this->getGrade($sectionId, $assignmentId, $enrollments[(string) $member->uid]);
-              $objSubmission->comment = $this->getComments($sectionId, $assignmentId, $enrollments[(string) $member->uid]);
-
-              $files[] = $objSubmission;
-            }
-          }
-        }
+        $memberFiles = $this->listFilesOfGroupMember($sectionId, $groupName, $member, $assignmentId);
+        $files = array_merge($files, $memberFiles);
       }
     return $files;
   }
 
-  // save all attachments for a specific group and assignment
-  function saveAttachments($files, $assignment) {
+  function saveAttachment($file, $assignmentId) {
+    $assignments = $this->getSectionAssignments($file->sectionId);
     $downloadsFolder = 'downloads';
     $FS = new Filesystem;
-    foreach ($files as $file) {
-      $filename = str_replace(' ', '-', $file->group . '-' . $file->last_name . '-' . $file->first_name . '-' . $file->userId . '-' . $file->revision . '-' . $file->name);
-      $sanitized = $FS->sanitize($assignment);
-      $sanitizedGroup = $FS->sanitize($file->group);
-      $groupFolder = $downloadsFolder . '/' . $sanitized . '/' . $sanitizedGroup;
-      $FS->mkdir($groupFolder);
-      $response = $this->api($file->apiUrl, '+1 second');
-      $sanitized_filename = iconv("UTF-8", "ISO-8859-1//TRANSLIT", $filename);
-      $filePath = $groupFolder . '/' . $sanitized_filename;
-      // download and save raw file
-      if (!file_exists($filePath)) {
-        file_put_contents($filePath, file_get_contents($response->redirect_url));
-      }
+    $filename = str_replace(' ', '-', $file->group . '-' . $file->last_name . '-' . $file->first_name . '-' . $file->userId . '-' . $file->revision . '-' . $file->name);
+    $sanitized = $FS->sanitize($assignments[$assignmentId]);
+    $sanitizedGroup = $FS->sanitize($file->group);
+    $groupFolder = $downloadsFolder . '/' . $sanitized . '/' . $sanitizedGroup;
+    $FS->mkdir($groupFolder);
+    $response = $this->api($file->apiUrl, '+1 second');
+    $sanitized_filename = iconv("UTF-8", "ISO-8859-1//TRANSLIT", $filename);
+    $filePath = $groupFolder . '/' . $sanitized_filename;
+    // download and save raw file
+    if (!file_exists($filePath)) {
+      file_put_contents($filePath, file_get_contents($response->redirect_url));
     }
+    return $filePath;
+  }
+  
+// save all attachments for a specific group and assignment
+  function saveAttachments($files, $assignment) {
+    foreach ($files as $file) {
+      $this->saveAttachment($file, $assignment);
+    }    
   }
 
   // save all attachments for a specific user

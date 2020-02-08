@@ -253,7 +253,7 @@ require_once('controller.php');
                               <td class="numeric"><?= $file->size . ' MB' ?></td>          
                               <td><?= $file->datetime ?></td>          
                               <td class="numeric"><?= $file->grade ?></td>          
-                              <td><a title="<?= $file->comment ?>" href="<?= $file->url ?>"><?= $file->name ?></a></td>
+                              <td><a title="<?= $file->comment ?>" href="?section=<?= $section ?>&assignment=<?= $assignment ?>&group=<?= urlencode($group) ?>&userid=<?= $file->member->uid ?>&submission=<?= $file->id?>&action=file"><?= $file->name ?></a></td>
                               <td><i title="<?= $file->comment ?>" class="fa <?= $file->comment != '' ? 'fa-comment' : '' ?>" aria-hidden="true"></i></td>
                           </tr>
       <?

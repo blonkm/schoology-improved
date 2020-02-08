@@ -93,17 +93,30 @@ switch (strtolower($action)) {
     $course->deleteAllGroups($section);
     break;
   case 'file':
-    /*
-      // first download file to local server
-      $pageTitle = "Downloading submission file " . $submission . " of assignment " . $assignment ;
-      $files = $course->listFilesOfGroupMembers($section, $group, $assignment);
-      $assignments = $course->getSectionAssignments($section, Course::STATUS_ALL);
-      $course->saveAttachments($files, $assignments[$assignment]);
-      if ($course->download($section, null, $assignments[$assignment], $group))
-     */
-    $filesSaved = true;
-    if ($course->downloadFile($section, $submission))
-      die(); // no more response, we're downloading a zip file            
+    $pageTitle = "Downloading submission file " . $submission . " of assignment " . $assignment ;
+    if (empty($group)) {
+      $group = "user";
+    }
+    $member = $course->getUserInfo($userid);
+    $first = $member->name_first;
+    $last = $member->name_last;
+    $id = $member->id;
+    $schoolId = formatId($member->school_uid);    
+    $files = $course->listFilesOfGroupMember($section, $group, $member, $assignment);    
+    $files = array_filter($files, function ($f) use ($submission) {
+        return $f->id == $submission;
+    });
+    if (count($files)>0) {
+      $file = reset($files); // reset id to 0 and get first item
+      $path = $course->saveAttachment($file, $assignment);
+      $filesSaved = true;
+      header('Content-Disposition: attachment; filename=' . $file->saveAs);
+      header("Content-Transfer-Encoding: Binary");       
+      header('Content-Type: application/octet-stream');
+      ob_end_clean();
+      readfile($path);
+      exit();
+    }
     break;
   case 'download':
     $course->purgeDownloads();
