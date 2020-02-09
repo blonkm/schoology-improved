@@ -304,6 +304,50 @@ class Course {
   }
 
   /**
+   * get all enrollments who are not in a grading group
+   * 
+   * @param type $sectionId the section
+   */
+  function getOrphans($sectionId) {
+    // get everyone in the course
+    $enrollments = $this->getMemberObjects($sectionId);
+    
+    // get everyone who is in a group (hierarchical groups with members)
+    $groups = $this->listAllGradingGroupMembers($sectionId);
+    
+    // flatten groups to list of members
+    $members = [];
+    foreach($groups as $group) {
+      foreach($group->members as $member) {
+        $members[$member->id] = $member;
+      }
+    }
+    
+    // loop and find all enrollments not in the member list
+    $orphanEnrollments = [];
+    foreach ($enrollments as $enrollment) {
+      if (!key_exists($enrollment->uid, $members)) {
+        $orphanEnrollments[] = $enrollment;
+      }    
+    }
+
+    // convert enrollment objects to user objects
+    $orphans = [];
+    foreach($orphanEnrollments as $orphan) {
+      $member = $this->getUserInfo($orphan->uid);
+      $user = (object) ([
+          'group' => '',
+          'first_name' => $member->name_first,
+          'last_name' => $member->name_last,
+          'username' => strtoupper($member->username),
+          'info' => $this->getUserInfo($orphan->uid)]);
+      $orphans[$orphan->uid] = $user;
+    }
+
+    return $orphans;
+  }
+  
+  /**
    *  Convert user ids to enrollment ids
    *  @param lookup an array of schoology user ids
    *  @returns array of enrollment ids

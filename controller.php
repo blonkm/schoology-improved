@@ -44,6 +44,8 @@ switch (strtolower($action)) {
     $pageTitle = "Group members of section " . $sectionInfo->section_title;
     $groups = $course->listAllGradingGroupMembers($section);
     $users = getAllUsers($groups);
+    $orphans = $course->getOrphans($section);
+    $users = array_merge($orphans, $users);
     break;
   case 'attendance':
     $pageTitle = "Attendance for members of section " . $sectionInfo->section_title;
