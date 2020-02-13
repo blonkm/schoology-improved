@@ -39,16 +39,18 @@
     }
     
     function initDropzone() {
-        new Dropzone("#frmImport", { 
-            maxFilesize: 2, // MB
-            maxFiles: 1,
-            init: function() {
-                this.on("success", function(file, responseText) {
-                    var el = document.querySelector('#preview');
-                    el.innerHTML = responseText;
-                });
-            }
-        });
+        if (document.querySelector("#frmImport")) {
+            new Dropzone("#frmImport", { 
+                maxFilesize: 2, // MB
+                maxFiles: 1,
+                init: function() {
+                    this.on("success", function(file, responseText) {
+                        var el = document.querySelector('#preview');
+                        el.innerHTML = responseText;
+                    });
+                }
+            });
+        }
     }
     
     domReady(function () {
@@ -58,6 +60,6 @@
         initDropzone();
     });
     
-Dropzone.autoDiscover = false;
+    Dropzone.autoDiscover = false;
 
 })();
