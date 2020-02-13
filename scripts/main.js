@@ -38,9 +38,26 @@
         });        
     }
     
+    function initDropzone() {
+        new Dropzone("#frmImport", { 
+            maxFilesize: 2, // MB
+            maxFiles: 1,
+            init: function() {
+                this.on("success", function(file, responseText) {
+                    var el = document.querySelector('#preview');
+                    el.innerHTML = responseText;
+                });
+            }
+        });
+    }
+    
     domReady(function () {
         var reloadButton = document.getElementById("reloadButton");
         reloadButton.addEventListener('click', reloadFromAPI, false);
         initSort();
+        initDropzone();
     });
+    
+Dropzone.autoDiscover = false;
+
 })();

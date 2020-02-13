@@ -33,7 +33,7 @@ $cache = strtolower(filter_input(INPUT_GET, 'cache', FILTER_SANITIZE_URL));
 $status = strtolower(filter_input(INPUT_GET, 'status', FILTER_SANITIZE_URL));
 $category = strtolower(filter_input(INPUT_GET, 'category', FILTER_SANITIZE_URL));
 $submission = strtolower(filter_input(INPUT_GET, 'submission', FILTER_SANITIZE_URL));
-
+$file = strtolower(filter_input(INPUT_GET, 'file', FILTER_SANITIZE_URL));
 
 
 // init objects for entire page
@@ -80,6 +80,10 @@ require_once('controller.php');
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
         <link rel="stylesheet" href="styles/tablesort.css">
         <link href="//cdn.jsdelivr.net/npm/zoom-vanilla.js/dist/zoom.css" rel="stylesheet">
+        <link href="styles/dropzone.css" type="text/css" rel="stylesheet" />
+
+        <!-- 2 -->
+        <script src="scripts/dropzone.js"></script>
         <script src="scripts/main.js"></script>
         <script src='scripts/tablesort.min.js'></script>
 
@@ -369,10 +373,18 @@ require_once('controller.php');
                     } else {
                       ?>            
                       <h3>Import members</h3>
+                      
+                      <form id="frmImport" name="frmImport" action="groups.php?section=<?= $section ?>&action=upload" class="dropzone">
+                        <div class="fallback">
+                              <input type="file" name="upload" accept=".csv" />
+                          </div>
+                      </form>
+
+                      <div id="preview"></div>
                       <p>Make sure that</p>
                       <ul>
                           <li>Members are registered in Schoology</li>
-                          <li>Your file is formatted as
+                          <li>Your file is a CSV file, formatted as
                               <ol>
                                   <li>uniqueid</li>
                                   <li>user name</li>
@@ -382,14 +394,7 @@ require_once('controller.php');
                               </ol>
                           </li>
                       </ul>
-                      <form name="frmImport" action="groups.php?section=<?= $section ?>&action=upload" method="post" enctype="multipart/form-data">
-                          <div class="upload-btn-wrapper">
-                              <button class="btn" form="frmImport">Select a file</button>
-                              <input type="file" name="upload" accept=".csv" onchange="showSelectedFile(this.value)"/>
-                              <input type="submit" class="btn" value="upload" />
-                              <p id="selectedFile">&nbsp;</p>
-                          </div>
-                      </form>
+
       <?
     }
 }

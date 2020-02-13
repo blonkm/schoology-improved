@@ -129,8 +129,17 @@ class Course {
     $this->_errors[] = $message;
   }
 
+  public function hasErrors() {
+    return count($this->_errors) > 0;
+  }
+  
+  function getFirstError() {
+    if ($this->hasErrors()) {
+      return $this->_errors[0];
+    }
+  }
+  
   /* show error messages in HTML */
-
   function showErrors() {
     foreach ($this->_errors as $message)
       echo '<p class="error">' . $message . '</p>';
@@ -806,14 +815,14 @@ class Course {
   // @return an array of group,member pairs
   function uploadMembersCsv() {
     $uploader = new Uploader('uploads');
-    $fieldName = 'upload';
+    $fieldName = 'file';
     $type = 'csv';
     $targetFile = $uploader->upload($fieldName, $type);
     if (!$uploader->hasErrors()) {
       $csv = array_map('str_getcsv', file($targetFile));
       return $csv;
     } else {
-      $this->_errors = $uploader->getErrors();
+      $this->_errors = $uploader->getErrors();     
       return [];
     }
   }
@@ -840,7 +849,7 @@ class Course {
       echo($id . ' -> ' . $groupName . "<br/>");
     }
     //TODO: convert school_uid to schoology ID or even better: enrollmentId
-    $this->createGradingGroups($sectionId, $data);
+    //$this->createGradingGroups($sectionId, $data);
     return;
   }
 

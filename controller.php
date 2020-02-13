@@ -95,7 +95,7 @@ switch (strtolower($action)) {
     $course->deleteAllGroups($section);
     break;
   case 'file':
-    $pageTitle = "Downloading submission file " . $submission . " of assignment " . $assignment ;
+    $pageTitle = "Downloading submission file " . $submission . " of assignment " . $assignment;
     if (empty($group)) {
       $group = "user";
     }
@@ -103,17 +103,17 @@ switch (strtolower($action)) {
     $first = $member->name_first;
     $last = $member->name_last;
     $id = $member->id;
-    $schoolId = formatId($member->school_uid);    
-    $files = $course->listFilesOfGroupMember($section, $group, $member, $assignment);    
+    $schoolId = formatId($member->school_uid);
+    $files = $course->listFilesOfGroupMember($section, $group, $member, $assignment);
     $files = array_filter($files, function ($f) use ($submission) {
-        return $f->id == $submission;
+      return $f->id == $submission;
     });
-    if (count($files)>0) {
+    if (count($files) > 0) {
       $file = reset($files); // reset id to 0 and get first item
       $path = $course->saveAttachment($file, $assignment);
       $filesSaved = true;
       header('Content-Disposition: attachment; filename=' . $file->saveAs);
-      header("Content-Transfer-Encoding: Binary");       
+      header("Content-Transfer-Encoding: Binary");
       header('Content-Type: application/octet-stream');
       ob_end_clean();
       readfile($path);
@@ -162,13 +162,12 @@ switch (strtolower($action)) {
     header("Content-Disposition: attachment; filename=file.csv");
     header("Pragma: no-cache");
     header("Expires: 0");
-    echo "\xEF\xBB\xBF";
+    if (strtolower($action) == 'excel') {
+      echo "\xEF\xBB\xBF";
+    }
     echo "uniqueid,username,group,first,last\n";
     foreach ($users as $user) {
       $out = $user->info->uid . ',' . $user->username . ',' . $user->group . ',' . $user->first_name . ',' . $user->last_name . "\n";
-      if (strtolower($action) == 'excel')
-        echo mb_convert_encoding($out, 'UTF-16LE', 'UTF-8');
-      else
         echo $out;
     }
     die();
@@ -177,8 +176,47 @@ switch (strtolower($action)) {
     $course->purgeDownloads();
     break;
   case 'upload':
+    header('Content-Type: text/html; Charset=UTF-8');
     $data = $course->uploadMembersCsv();
-    $import = $course->importCsv($section, $data);
+    if ($course->hasErrors()) {
+      echo $course->getFirstError();
+      http_response_code(404);
+      die();
+    } 
+    $fileName = $_FILES["file"]["name"];
+    ?>
+    <h2>Data Preview</h2>
+    <p>Here's a preview of your data. Once you are ready to 
+      import this data, press the button below</p>
+    <p><a class="button" style="display: inline" href="groups.php?section=<?=$section?>&file=<?=$fileName?>&action=importGroupsData">load data</a></p>
+    <table>
+      <thead>
+        <tr>
+            <? foreach ($data[0] as $field) { ?>
+            <th><?= $field ?></th>
+          <? } ?>
+        </tr>
+      </thead>
+      <tbody>
+          <?
+          array_shift($data);
+          foreach ($data as $row) {
+            ?>
+          <tr>
+              <? foreach ($row as $item) { ?>
+              <td><?= $item?></td>
+            <? } ?>
+          </tr>
+        <? } ?>
+      </tbody>
+    </table>
+    <?
+    die();
+    break;
+  case 'importGroupsData':
+    $fileName = $file;
+    $data = $FS->read($file);
+    //$import = $course->importCsv($section, $data);
     break;
   case 'getid':
     try {
