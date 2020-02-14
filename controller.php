@@ -213,10 +213,12 @@ switch (strtolower($action)) {
     <?
     die();
     break;
-  case 'importGroupsData':
+  case 'importgroupsdata':
+    $FS = new Filesystem;
     $fileName = $file;
-    $data = $FS->read($file);
-    //$import = $course->importCsv($section, $data);
+    $targetFile = 'uploads/' . $file;
+    $csv = array_map('str_getcsv', file($targetFile));
+    $import = $course->importCsv($section, $csv);
     break;
   case 'getid':
     try {

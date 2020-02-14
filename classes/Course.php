@@ -294,25 +294,6 @@ class Course {
   }
 
   /**
-   *  Put members in groups
-   *  this is a one time thing for the course
-   *  IDs are students schoology IDs
-   *  the api uses enrollment ids
-   *  you can generate it using an Excel file or script
-   */
-  function groupUsers() {
-    // set groups
-    $groupsAsText = array();
-
-    $groups = [];
-
-    // import group definitions
-    include('groups_import.php');
-
-    return $groups;
-  }
-
-  /**
    * get all enrollments who are not in a grading group
    * 
    * @param type $sectionId the section
@@ -369,7 +350,7 @@ class Course {
       foreach ($users as $user) {
         if (array_key_exists($user, $lookup))
           $enrollments[(string) $key][] = $lookup[$user];
-        else {
+        else {          
           $userInfo = $this->getUserInfo($user);
           $first = $userInfo->name_first;
           $last = $userInfo->name_last;
@@ -424,32 +405,59 @@ class Course {
   /**
    *  Create grading groups
    *  
-   *  @param sectionId the section in which we should make groups
+   *  @param $sectionId the section in which we should make groups
+   *  @param $import array in format [uniqueId, groupName]
    *  @caveats works only as one group at a time. 
    *  @see https://support.schoology.com/hc/en-us/requests/101876
    */
-  function createGradingGroups($sectionId, $import = null) {
-    $schoology = $this->app();
-
-    // convert user ids to enrollment ids
-    $lookup = $this->listMembers($sectionId);
-    $memberObjects = $this->getMemberObjects($sectionId);
-    if (isset($import)) {
-      $groups = $this->groups($import);
-    } else {
-      $groups = $this->groups($lookup);
+  function createGradingGroups($sectionId, $import) {
+    if (empty($sectionId)) {
+      throw new Exception('section id required in createGradingGroups');
     }
+    if (empty($import)) {
+      throw new Exception('import data empty in createGradingGroups');
+    }
+    
+    // find all members (enrollment ids)
+    $memberObjects = $this->getMemberObjects($sectionId);
+    foreach ($memberObjects as $member) {
+      $enrollments[$member->uid] = $member->id;
+    }
+
+    // filter by members who need to be placed in groups (imported)
+    $find_user = function($item) use ($import) { return isset($import[$item]); };
+    $users = array_filter($enrollments, $find_user, ARRAY_FILTER_USE_KEY);
+
+    // add the group to enrollment ids
+    foreach ($users as $id=>$user) {
+      $usersWithGroup[] = (object)["id"=>$user, "group"=>$import[$id]];
+    }
+    
+    // convert to nested array
+    $groupArray=[];
+    foreach ($usersWithGroup as $key=>$user) {
+      if (!array_key_exists($user->group, $groupArray)) {
+        $groupArray[$user->group] = [];
+      }
+      array_push($groupArray[$user->group], $user->id);
+    }
+
+    // convert to nested objects
+    foreach ($groupArray as $key => $members) {
+      $groups[] = (object) ['title' => $key, 'members' => $members];
+    }
+
+    // call api to add groups with their respective members
     foreach ($groups as $group) {
       $request = (object) $group;
       $json = json_encode($request);
-      $pretty_json = json_encode($request, JSON_PRETTY_PRINT + JSON_NUMERIC_CHECK);
-
+      
       $url = 'sections/{section_id}/grading_groups';
       $url = str_replace('{section_id}', $sectionId, $url);
 
       // do the call
       $schoology = $this->app();
-      $response = $schoology->api($url, 'POST', $json);
+      $schoology->api($url, 'POST', $json);
       usleep(200 * 1000); // wait 200ms 
     }
   }
@@ -468,7 +476,6 @@ class Course {
     $memberObjects = $this->getMemberObjects($sectionId);
     $groups = $this->groups($lookup);
     $gradingGroups = $this->listGradingGroups($sectionId);
-
     foreach ($groups as $group) {
       if (array_key_exists($group->title, $gradingGroups)) {
         $groupId = $gradingGroups[$group->title];
@@ -790,7 +797,6 @@ class Course {
   }
 
   /* purge all downloads */
-
   function purgeDownloads() {
     $downloadsFolder = realpath('downloads');
     if (!$downloadsFolder)
@@ -799,15 +805,6 @@ class Course {
     $objFilesystem->deleteFiles($downloadsFolder);
     $this->_errors = $objFilesystem->getErrors();
     $objFilesystem->mkdir($downloadsFolder);
-  }
-
-  // test if we can actually post something to schoology
-  // result: yes we can
-  function testCreateGroup() {
-    $query = '{"title": "My new group","description": "discuss new groups","website": "http:\/\/www.newgroup.com"}';
-    $schoology = $this->app();
-    $response = $schoology->api('groups', 'POST', $query);
-    dump(json_decode($response->result));
   }
 
   // upload a CSV file with members to the server
@@ -826,30 +823,23 @@ class Course {
       return [];
     }
   }
-
+  
+  /**
+   * import a CSV file
+   * 
+   * @param type $sectionId
+   * @param type $data -> uniqueID, userID, groupName, firstName, lastName
+   * @return type
+   */
   function importCsv($sectionId, $data) {
-    $schoology = $this->app();
-
-    $memberObjects = $this->getMemberObjects($sectionId);
-    $users = [];
-    $enrollments = $this->listMembers($sectionId);
-    foreach ($memberObjects as $id => $user) {
-      // convert school user ids to schoology ids
-      $users[formatId($user->school_uid)] = $id;
-    }
+    array_shift($data); // remove headers
     $importData = [];
     foreach ($data as $entry) {
       $uniqueId = $entry[0];
-      $userId = $entry[1];
       $groupName = $entry[2];
-      $firstName = $entry[3];
-      $lastName = $entry[4];
-      $id = $uniqueId || $userId;
-      $importData[] = [$groupName, $id];
-      echo($id . ' -> ' . $groupName . "<br/>");
+      $importData[$uniqueId] = $groupName;
     }
-    //TODO: convert school_uid to schoology ID or even better: enrollmentId
-    //$this->createGradingGroups($sectionId, $data);
+    $this->createGradingGroups($sectionId, $importData);
     return;
   }
 
