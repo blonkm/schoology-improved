@@ -115,7 +115,7 @@ switch (strtolower($action)) {
       header('Content-Disposition: attachment; filename=' . $file->saveAs);
       header("Content-Transfer-Encoding: Binary");
       header('Content-Type: application/octet-stream');
-      ob_end_clean();
+      @ob_end_clean();
       readfile($path);
       exit();
     }
