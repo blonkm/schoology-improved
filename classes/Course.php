@@ -470,23 +470,22 @@ class Course {
    */
   function deleteAllGroups($sectionId) {
     $schoology = $this->app();
-
-    // convert user ids to enrollment ids
-    $lookup = $this->listMembers($sectionId);
-    $memberObjects = $this->getMemberObjects($sectionId);
-    $groups = $this->groups($lookup);
+    $this->disableCache();
     $gradingGroups = $this->listGradingGroups($sectionId);
-    foreach ($groups as $group) {
-      if (array_key_exists($group->title, $gradingGroups)) {
-        $groupId = $gradingGroups[$group->title];
-        $url = 'sections/{section_id}/grading_groups/{gg_id}';
-        $url = str_replace('{section_id}', $sectionId, $url);
-        $url = str_replace('{gg_id}', $groupId, $url);
-        // do the call
-        $response = $schoology->api($url, 'DELETE');
+    foreach ($gradingGroups as $groupId) {
+      $url = 'sections/{section_id}/grading_groups/{gg_id}';
+      $url = str_replace('{section_id}', $sectionId, $url);
+      $url = str_replace('{gg_id}', $groupId, $url);
+      // do the call
+      try {
+        $schoology->api($url, 'DELETE');
+      } catch (Exception $e) {
+          dump(time() . $e->getMessage());
       }
-      usleep(20 * 1000); // wait 20ms 
+
+      usleep(200 * 1000); // wait 200ms 
     }
+    $this->enableCache();
   }
 
   // make an array of grading groups
