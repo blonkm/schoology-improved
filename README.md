@@ -42,7 +42,7 @@ In the first two files put your key and secret resepectively Just the string, no
 Note: there is a method in helpers.php named 'formatId' which is specific for the school this was made for originally. You may need to change this function.
 
 ### Prepare import
-The import of groups is done by setting up a PHP array in ```groups_import.php````. This is only temporary, the aim is to import directly from a csv file. Ideally a schoology formatted export file can be used.
+The import of groups is done by setting up a PHP array in `groups_import.php`. This is only temporary, the aim is to import directly from a csv file. Ideally a schoology formatted export file can be used.
 
 ### Run import
 Now it's time to run the import by opening your browser, selecting a course, and then 'create'. There's also the 'import' option but it's not functional as of yet.
