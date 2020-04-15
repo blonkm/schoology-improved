@@ -55,7 +55,9 @@
     
     domReady(function () {
         var reloadButton = document.getElementById("reloadButton");
-        reloadButton.addEventListener('click', reloadFromAPI, false);
+        if (!!reloadButton) {
+            reloadButton.addEventListener('click', reloadFromAPI, false);
+        }
         initSort();
         initDropzone();
     });
