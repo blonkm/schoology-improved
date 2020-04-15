@@ -79,7 +79,7 @@ require_once('controller.php');
         <link rel="stylesheet" href="styles/nav.css">
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
         <link rel="stylesheet" href="styles/tablesort.css">
-        <link href="//cdn.jsdelivr.net/npm/zoom-vanilla.js/dist/zoom.css" rel="stylesheet">
+        <link href="styles/zoom.css" rel="stylesheet">
         <link href="styles/dropzone.css" type="text/css" rel="stylesheet" />
 
         <!-- 2 -->
@@ -404,7 +404,7 @@ $course->showErrors();
 
             </div>
         </section>
-        <script src="//cdn.jsdelivr.net/npm/zoom-vanilla.js@2.0.6/dist/zoom-vanilla.min.js"></script>
+        <script src="scripts/zoom-vanilla.js"></script>
         <script>
 
         </script>         
