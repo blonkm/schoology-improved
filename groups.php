@@ -404,7 +404,7 @@ $course->showErrors();
 
             </div>
         </section>
-        <script src="//cdn.jsdelivr.net/npm/zoom-vanilla.js/dist/zoom-vanilla.min.js"></script>
+        <script src="//cdn.jsdelivr.net/npm/zoom-vanilla.js@2.0.6/dist/zoom-vanilla.min.js"></script>
         <script>
 
         </script>         
