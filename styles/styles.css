@@ -216,51 +216,39 @@ select {font-size:.9em; }
 }
 
 .awesomplete ul { height: 15em; overflow-y:scroll; }
-.awesomplete li { font-size:1.5em; }
-.awesomplete input {
+.awesomplete .dropdown-input {
     display: block;
     width: 12em;
     padding: .3em .5em;
-    font-size: 1.5em;
     border: 0;
     border: 1px solid hsl(35, 80%, 60%);
     background: hsla(0,0%,100%,.2);
-    border-radius: .3em;
+    border-radius: .3em 0 0 .3em;
     box-shadow: .05em .1em .3em rgba(0,0,0,.3) inset;
 }
-    
-.dropdown-btn {
+
+.dropdown-btn, #selectCourseButton {
     padding: .1em .5em;
-    border-radius: .3em;
-    background: (50, 10%, 50%);
-    /*background: linear-gradient(hsl(40, 70%, 80%), hsl(40, 70%, 70%));*/
+    border-radius: 0 0.3em 0.3em 0;
+    background: hsl(10, 50%, 50%);
+    background: linear-gradient(hsl(40, 20%, 80%), hsl(40, 20%, 70%));
     border: 1px solid rgba(0,0,0,.3);
     box-shadow: 0 1px white inset, 0 0.3em 0.3em -0.3em rgba(0,0,0,.3);
-}
-
-.dropdown-input {
-	border-top-right-radius: 0;
-	border-bottom-right-radius: 0;
-}
-
-.dropdown-btn {
-	vertical-align: top;
-	height: 2.5em;
-	border-top-left-radius: 0;
-	border-bottom-left-radius: 0;
+    height: 25px;
+    display: inline-block;
 }
 
 .caret {
-	display: inline-block;
-	width: 0;
-	height: 0;
-	margin-left: 2px;
-	vertical-align: middle;
-	border-top: 4px dashed;
-	border-top: 4px solid;
-	border-right: 4px solid transparent;
-	border-left: 4px solid transparent;
+    display: inline-block;
+    width: 0;
+    height: 0;
+    margin-left: 2px;
+    vertical-align: middle;
+    border-top: 4px dashed;
+    border-top: 4px solid;
+    border-right: 4px solid transparent;
+    border-left: 4px solid transparent;
 }
 #selectCourseButton {
-    font-size: 2em;
+   border-radius: 0.3em 0.3em 0.3em 0.3em;
 }

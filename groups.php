@@ -135,8 +135,7 @@ require_once('controller.php');
               
                       <nav id="courses">
                         <label for="course">Search courses:</label>
-                        <input placeholder="start typing a course name" class="awesomplete dropdown-input" type="text" name="course" id="course" list="course_list">
-                        <button class="dropdown-btn"><span class="caret"></span></button>
+                        <input placeholder="start typing a course name" class="awesomplete dropdown-input" type="text" name="course" id="course" list="course_list"><button class="dropdown-btn"><span class="caret"></span></button>
                         <datalist id="course_list">
                           <? foreach ($courses as $objCourse) { 
                                foreach ($objCourse->sections as $section) { ?>
