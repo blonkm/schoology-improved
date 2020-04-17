@@ -34,6 +34,7 @@ switch (strtolower($action)) {
   case 'pictures':
   case 'courses':
     $courses = $course->getCourses();
+    usort($courses, function($c1, $c2) { return strcmp($c1->title, $c2->title); });
     $pageTitle = "Select a course from available courses";
     break;
   case 'groups':

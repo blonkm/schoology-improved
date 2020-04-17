@@ -81,12 +81,17 @@ require_once('controller.php');
         <link rel="stylesheet" href="styles/tablesort.css">
         <link href="styles/zoom.css" rel="stylesheet">
         <link href="styles/dropzone.css" type="text/css" rel="stylesheet" />
-
+        <link href="styles/awesomplete/awesomplete.base.css" rel="stylesheet" type="text/css"/>
+        <link href="styles/awesomplete/awesomplete.css" rel="stylesheet" type="text/css"/>
+        <link href="styles/awesomplete/awesomplete.theme.css" rel="stylesheet" type="text/css"/>
+        
         <!-- 2 -->
         <script src="scripts/dropzone.js"></script>
         <script src="scripts/main.js"></script>
         <script src='scripts/tablesort.min.js'></script>
 
+        <script src="scripts/awesomplete/awesomplete.min.js"></script>
+        
         <!-- Include sort types you need -->
         <script src='scripts/sorts/tablesort.number.min.js'></script>
         <script src='scripts/sorts/tablesort.date.min.js'></script>       
@@ -127,17 +132,20 @@ require_once('controller.php');
                 switch ($action) {
                   case 'courses':
                     ?>
-                    <nav id="courses">
-                        <ul><? foreach ($courses as $objCourse) { ?>
-                              <li><a href=""><?= $objCourse->title ?></a>
-                                  <ul><? foreach ($objCourse->sections as $section) { ?>
-                                        <li><a href="?section=<?= $section->id ?>&action=matrix"><?= $section->section_title ?></a></li>
-      <? } ?>
-                                  </ul>
-                              </li>
-                                    <? } ?>          
-                        </ul>
-                    </nav>
+              
+                      <nav id="courses">
+                        <label for="course">Search courses:</label>
+                        <input placeholder="start typing a course name" class="awesomplete dropdown-input" type="text" name="course" id="course" list="course_list">
+                        <button class="dropdown-btn"><span class="caret"></span></button>
+                        <datalist id="course_list">
+                          <? foreach ($courses as $objCourse) { 
+                               foreach ($objCourse->sections as $section) { ?>
+                                  <option data-id="<?= $section->id?>" value="<?= $objCourse->title . " - " . $section->section_title?>"><?= $objCourse->title ?> - <?= $section->section_title ?></option>
+                              <? } 
+                          } ?>                                    
+                        </datalist>
+                        <button id="selectCourseButton">Go</button>
+                      </nav>
                             <?
                             break;
                           case 'pictures':

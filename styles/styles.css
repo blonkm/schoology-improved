@@ -100,7 +100,7 @@ header {
 
 
 /* flexbox */
-section div {
+section>div {
     display: flex;
     flex-direction: column;
     justify-content: left;
@@ -177,18 +177,19 @@ select {font-size:.9em; }
 
 /* course section list */
 #courses { margin-left: 30px; }
-
-#courses ul
+#courses input { width:30em; }
+#courses optgroup
 {
     margin: 0;
     padding: 0;
     list-style-type: none;
     font-family: verdana, arial, Helvetica, sans-serif;
+    font-size: 1.5em;
 }
 
-#courses li { margin: 0; }
+#courses option { margin: 0; }
 
-#courses a
+#courses option
 {
     display: block;
     padding: 5px 10px;
@@ -201,10 +202,9 @@ select {font-size:.9em; }
     border-bottom: 1px solid #333;
     border-right: 1px solid #333;
     font-weight: bold;
-    font-size: .8em;
 }
 
-#courses a:hover
+#courses option:hover
 {
     color: #000;
     background-color: #889E88;
@@ -215,22 +215,52 @@ select {font-size:.9em; }
     border-right: 1px solid #fff;
 }
 
-#courses ul ul li { margin: 0; }
-
-#courses ul ul a
-{
+.awesomplete ul { height: 15em; overflow-y:scroll; }
+.awesomplete li { font-size:1.5em; }
+.awesomplete input {
     display: block;
-    padding: 5px 5px 5px 30px;
-    width: 125px;
-    color: #000;
-    background-color: #C5D8C5;
-    text-decoration: none;
-    font-weight: normal;
+    width: 12em;
+    padding: .3em .5em;
+    font-size: 1.5em;
+    border: 0;
+    border: 1px solid hsl(35, 80%, 60%);
+    background: hsla(0,0%,100%,.2);
+    border-radius: .3em;
+    box-shadow: .05em .1em .3em rgba(0,0,0,.3) inset;
+}
+    
+.dropdown-btn {
+    padding: .1em .5em;
+    border-radius: .3em;
+    background: (50, 10%, 50%);
+    /*background: linear-gradient(hsl(40, 70%, 80%), hsl(40, 70%, 70%));*/
+    border: 1px solid rgba(0,0,0,.3);
+    box-shadow: 0 1px white inset, 0 0.3em 0.3em -0.3em rgba(0,0,0,.3);
 }
 
-#courses ul ul a:hover
-{
-    color: #000;
-    background-color: #889E88;
-    text-decoration: none;
+.dropdown-input {
+	border-top-right-radius: 0;
+	border-bottom-right-radius: 0;
+}
+
+.dropdown-btn {
+	vertical-align: top;
+	height: 2.5em;
+	border-top-left-radius: 0;
+	border-bottom-left-radius: 0;
+}
+
+.caret {
+	display: inline-block;
+	width: 0;
+	height: 0;
+	margin-left: 2px;
+	vertical-align: middle;
+	border-top: 4px dashed;
+	border-top: 4px solid;
+	border-right: 4px solid transparent;
+	border-left: 4px solid transparent;
+}
+#selectCourseButton {
+    font-size: 2em;
 }
