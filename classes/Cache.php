@@ -91,6 +91,26 @@ class Cache {
     }
   }
 
+  public function fetchExpired($numRecords) {
+    $sql = <<<EOT
+      SELECT url, response, expires 
+      FROM resources
+      WHERE expires < strftime('%s','now')
+      ORDER BY expires
+      LIMIT $numRecords
+EOT;
+    $stmt = $this->db->query($sql);
+    $ret = $stmt->execute();   
+    if ($ret) {
+      $resources = [];
+      while ($resource = $stmt->fetchObject('Resource')) {
+        $resources[$resource->url] = $resource->response;
+      }
+    } else
+      $resources = false;
+    return $resources;
+  }
+  
   // unused for now   
   public function fetchAll() {
     if (!$this->active) {

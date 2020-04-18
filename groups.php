@@ -34,6 +34,7 @@ $status = strtolower(filter_input(INPUT_GET, 'status', FILTER_SANITIZE_URL));
 $category = strtolower(filter_input(INPUT_GET, 'category', FILTER_SANITIZE_URL));
 $submission = strtolower(filter_input(INPUT_GET, 'submission', FILTER_SANITIZE_URL));
 $file = strtolower(filter_input(INPUT_GET, 'file', FILTER_SANITIZE_URL));
+$updateCount = strtolower(filter_input(INPUT_GET, 'n', FILTER_SANITIZE_URL)) ?: 1;
 
 
 // init objects for entire page
@@ -59,6 +60,7 @@ $menuItems = [
     'attendance' => ['attendance', 'display attendance last week'],
     '' => ['', ''],
     'reload' => ['reload', 'reload current page data from Schoology'],
+    'refresh' => ['refresh', 'update oldest record in database from api'],
     'import' => ['import', 'upload and import csv file'],
     'clean' => ['clean', 'delete all temporary files from server'],
     'create' => ['create', 'create all groups. Careful!'],
@@ -367,6 +369,16 @@ require_once('controller.php');
                     <?
                     break;
                   case 'reload':
+                    break;
+                  case 'refresh':
+                    ?>
+                    <p>The following records have been retrieved from Schoology:</p>
+                    <ul>
+                    <?
+                      foreach ($updatedRecords as $url => $resource) {
+                        ?><li><?=$url?></li><?
+                      }
+                    ?></ul><?
                     break;
                   case 'create':
                     echo "groups created";

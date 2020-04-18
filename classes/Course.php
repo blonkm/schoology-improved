@@ -92,6 +92,14 @@ class Course {
       $this->disableCache();
   }
 
+  function refreshCache($numRecords) {
+    $records = $this->cache()->fetchExpired($numRecords);
+    foreach ($records as $url => $resource) {
+      $this->api($url);
+    }
+    return $records;
+  }
+  
   function apiCounter() {
     return $this->_apiCallCount;
   }

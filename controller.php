@@ -232,7 +232,10 @@ switch (strtolower($action)) {
     }
     echo json_encode(['id' => $member->id]);
     //echo $member->id;
-    die(); // ajax, no more output      	
+    die(); // ajax, no more output  
+  case 'refresh':
+    $pageTitle = "updating records";
+    $updatedRecords = $course->refreshCache($updateCount); // retrieve n records
   default:
   // nothing here
 }
