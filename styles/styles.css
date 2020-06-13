@@ -252,3 +252,12 @@ select {font-size:.9em; }
 #selectCourseButton {
    border-radius: 0.3em 0.3em 0.3em 0.3em;
 }
+
+#userinfo {
+    right: 0;
+    color: white;
+    float: right;
+    margin-top: 1em;
+    font-size: 1.2em;
+    margin-right: 1em;
+}

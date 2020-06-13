@@ -689,7 +689,7 @@ class Course {
   }
 
   function saveAttachment($file, $assignmentId) {
-    $assignments = $this->getSectionAssignments($file->sectionId);
+    $assignments = $this->getSectionAssignments($file->sectionId, self::STATUS_ALL);
     $downloadsFolder = 'downloads';
     $FS = new Filesystem;
     $filename = str_replace(' ', '-', $file->group . '-' . $file->last_name . '-' . $file->first_name . '-' . $file->userId . '-' . $file->revision . '-' . $file->name);
