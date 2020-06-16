@@ -11,7 +11,7 @@ class Course {
   const API_BASE = 'https://api.schoology.com/v1';
   const WEB_BASE = 'https://www.schoology.com';
   const LIMIT = 400; // arbitrary to limit download time
-  const DATETIME_FORMAT = 'D Y-M-d h:i A'; // Mon 2017-nov-20 8:50
+  const DATETIME_FORMAT = 'D d-M-Y h:i A'; // Mon 2017-nov-20 8:50 AM
   const DATE_FORMAT = 'D Y-M-d'; // Mon 2017-nov-20
   const TIME_FORMAT = 'h:i A'; // 8:50AM
   const STATUS_TEXT = ['View the item', 'Make a submission', 'Score at least'];

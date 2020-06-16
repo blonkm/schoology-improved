@@ -15,6 +15,7 @@ class Submission {
   public $url;
   public $name;
   public $datetime;
+  public $timestamp;
   public $saveAs;
   public $assignmentId;
   public $course;
@@ -49,6 +50,7 @@ class Submission {
     }
     $this->url .= "&action=file";
     $this->name = $file->title;
+    $this->timestamp = $file->timestamp;
     $this->datetime = date(Course::DATETIME_FORMAT, $file->timestamp);
     return $this;
   }
