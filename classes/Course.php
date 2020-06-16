@@ -9,6 +9,7 @@
 class Course {
 
   const API_BASE = 'https://api.schoology.com/v1';
+  const API_URL = 'https://api.schoology.com';
   const WEB_BASE = 'https://www.schoology.com';
   const LIMIT = 400; // arbitrary to limit download time
   const DATETIME_FORMAT = 'D d-M-Y h:i A'; // Mon 2017-nov-20 8:50 AM
@@ -86,10 +87,10 @@ class Course {
   }
 
   function setCache($active) {
-    if ($active)
-      $this->enableCache();
-    else
-      $this->disableCache();
+      if ($active)
+        $this->enableCache();
+      else
+        $this->disableCache();
   }
 
   function refreshCache($numRecords) {
@@ -114,7 +115,24 @@ class Course {
     return $cache->store($url, $resource, $expires);
   }
 
+  // first check if the api is available for requests
+  function checkApiStatus() {
+    $url = self::API_URL;
+    $headers = @get_headers($url); 
+    if($headers && strpos( $headers[0], '302')) { // schoology returns 302 normally
+      return true;
+    } 
+    else { 
+      return false;
+    } 
+  }
+  
   function api($url, $expires = '+1 year', $method = 'GET') {
+    if (@$this->checkApiStatus() == false) {
+      if (!$this->hasErrors()) {
+        $this->addError("Warning: Schoology api not available");
+      }
+    }
     $resource = $this->getResource($url);
     if (!$resource) {
       $schoology = $this->app();
@@ -218,6 +236,8 @@ class Course {
 
     // do the call
     $response = $this->api($url);
+    if (!$response) 
+      return false;
     $result = $response->result;
     $assignments = [];
     foreach ($result->assignment as $assignment) {
