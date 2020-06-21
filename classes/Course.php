@@ -21,6 +21,7 @@ class Course {
   const STATUS_SCORE_AT_LEAST = 2;
   const STATUS_ALL = 3;
   const STATUS_ALL_TEXT = "";
+  const STATUS_CHECK_PERIOD = 5;
 
   private static $API_KEY;
   private static $API_SECRET;
@@ -117,8 +118,16 @@ class Course {
 
   // first check if the api is available for requests
   function checkApiStatus() {
+    // only call once every STATUS_CHECK_PERIOD seconds in order to avoid 
+    // the page repeatedly checking for api availability
+    if (time() - $_SESSION['lastApiStatusCheck'] < self::STATUS_CHECK_PERIOD) 
+      return true;
     $url = self::API_URL;
-    $headers = @get_headers($url); 
+    $timeout = ini_get('default_socket_timeout');
+    ini_set('default_socket_timeout', 2);
+    $headers = @get_headers($url);   
+    $_SESSION['lastApiStatusCheck'] = time();
+    ini_set('default_socket_timeout', $timeout);    
     if($headers && strpos( $headers[0], '302')) { // schoology returns 302 normally
       return true;
     } 
