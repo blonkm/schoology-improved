@@ -1,7 +1,7 @@
 # Schoology-improved
 _**Using the Schoology API to do things you can't using the web version**_
 
-Schoology is a powerful Electronic Learning Environment. It helps you to manage materials, students, courses, etc. Still, some functionality is lacking.
+Schoology is a powerful Electronic Learning Management System. It helps you to manage materials, students, courses, etc. Still, some functionality is lacking.
 
 The Schoology SDK uses PHP to access Schoology objects. The Schoology Support site offers good documentation, but lacks example code. 
 
