@@ -83,6 +83,8 @@ switch (strtolower($action)) {
     break;
   case 'files':
     $pageTitle = "Submissions for " . $group . " in section " . $sectionInfo->section_title;
+    $groups = $course->listAllGradingGroupMembers($section);
+    $users = getAllUsers($groups);
     $files = $course->listFilesOfGroupMembers($section, $group, $assignment);
     $assignments = $course->getSectionAssignments($section, Course::STATUS_ALL);
     break;

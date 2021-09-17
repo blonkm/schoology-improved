@@ -273,8 +273,11 @@ require_once('controller.php');
                         </tr>
                       </thead>
                       <tbody>
-    <? foreach ($files as $file) { ?>
-                          <tr>
+    <? 
+    $fileUsers = [];
+    foreach ($files as $file) { 
+      $fileUsers[$file->userId] = $file->userId;
+                          ?><tr>
                               <td><?= $file->group ?></td>
                               <td><a target="_blank" href="groups.php?section=<?= $section ?>&userid=<?= $file->member->uid ?>&action=user"><?= $file->userId ?></a></td>
                               <td><?= $file->first_name ?></td>
@@ -294,8 +297,34 @@ require_once('controller.php');
                     <p><a href="?section=<?= $section ?>&assignment=<?= $assignment ?>&group=<?= urlencode($group) ?>&action=download">download files</a> 
                         | 
                         <a href="?section=<?= $section ?>&assignment=<?= $assignment ?>&action=download">download files of all groups</a> 
-                    </p><?
-                    break;
+                    </p>
+                    <h3>Not submitted</h3>
+                    <table>
+                    <?
+                    $count = 0;
+                    foreach ($users as $user) {
+                      $hasSubmitted = isset($fileUsers[$user->username]);
+                      $isInGroup = $user->group == $group;
+                      if(!$hasSubmitted && $isInGroup) {
+                      $count++;
+                      ?>
+                      <tr>
+                      <td><?=$group?></td>
+                      <td><?=$user->username?></td>
+                      <td><?=$user->first_name?></td>
+                      <td><?=$user->last_name?></td>
+                      </tr>
+                    <?}
+                    }?>
+                    </table>
+                    <p>
+                    <?
+                    if ($count==0) {
+                      echo "All students in this group have submitted";
+                    }
+                    ?>
+                    </p>
+                    <?break;
                   case 'user':
                     ?><h3 id="user-title"><?= $first ?> <?= $last ?> (<?= $schoolId ?>)</h3>
                     <table class="sortedTable">
