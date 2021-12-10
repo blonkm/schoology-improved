@@ -275,8 +275,11 @@ require_once('controller.php');
                       <tbody>
     <? 
     $fileUsers = [];
+    $count = count($files);
+    $totalSize = 0.0;
     foreach ($files as $file) { 
       $fileUsers[$file->userId] = $file->userId;
+      $totalSize += $file->size;
                           ?><tr>
                               <td><?= $file->group ?></td>
                               <td><a target="_blank" href="groups.php?section=<?= $section ?>&userid=<?= $file->member->uid ?>&action=user"><?= $file->userId ?></a></td>
@@ -294,7 +297,7 @@ require_once('controller.php');
     ?>
                       </tbody>
                     </table>
-                    <p><a href="?section=<?= $section ?>&assignment=<?= $assignment ?>&group=<?= urlencode($group) ?>&action=download">download files</a> 
+                    <p><a href="?section=<?= $section ?>&assignment=<?= $assignment ?>&group=<?= urlencode($group) ?>&action=download">download <?=$count?> files (<?=$totalSize?>MB)</a> 
                         | 
                         <a href="?section=<?= $section ?>&assignment=<?= $assignment ?>&action=download">download files of all groups</a> 
                     </p>
