@@ -237,7 +237,7 @@ switch (strtolower($action)) {
     die(); // ajax, no more output  
   case 'refresh':
     $pageTitle = "updating records";
-    $updatedRecords = $course->refreshCache($updateCount); // retrieve n records
+    $updatedRecords = $course->refreshCache($updateCount); // retrieve 1 record
   default:
   // nothing here
 }
