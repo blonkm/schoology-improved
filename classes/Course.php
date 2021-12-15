@@ -486,6 +486,11 @@ class Course {
       $groups[] = (object) ['title' => $key, 'members' => $members];
     }
 
+    // sort groups by name to make overview in schoology more logical
+    usort($groups,function($group1,$group2){
+        return strcmp($group1->title, $group2->title);
+    });    
+
     // call api to add groups with their respective members
     foreach ($groups as $group) {
       $request = (object) $group;
