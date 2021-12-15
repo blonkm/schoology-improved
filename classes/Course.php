@@ -465,6 +465,7 @@ class Course {
     $find_user = function($item) use ($import) { return isset($import[$item]); };
     $users = array_filter($enrollments, $find_user, ARRAY_FILTER_USE_KEY);
 
+    $usersWithGroups = [];
     // add the group to enrollment ids
     foreach ($users as $id=>$user) {
       $usersWithGroup[] = (object)["id"=>$user, "group"=>$import[$id]];
@@ -479,6 +480,7 @@ class Course {
       array_push($groupArray[$user->group], $user->id);
     }
 
+    $groups = [];
     // convert to nested objects
     foreach ($groupArray as $key => $members) {
       $groups[] = (object) ['title' => $key, 'members' => $members];
