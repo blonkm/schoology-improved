@@ -244,6 +244,11 @@ require_once('controller.php');
                               <? } ?>
                           </tr>
                             <? } ?>
+                          <tr>
+                              <td><a href="groups.php?section=<?= $section ?>&action=groups&group=none">none</a></td><? foreach ($assignments as $id => $assignment) { ?>
+                                <td><a target="_blank" title="<?= $group ?> - <?= $assignment ?>" href="groups.php?section=<?= $section ?>&group=none&assignment=<?= $id ?>&action=files">&nbsp;</a></td>
+                              <? } ?>
+                          </tr>
                       </tbody>
                     </table>
                         <?
@@ -304,10 +309,10 @@ require_once('controller.php');
                     <h3>Not submitted</h3>
                     <table>
                     <?
-                    $count = 0;
+                    $count = 0;                    
                     foreach ($users as $user) {
                       $hasSubmitted = isset($fileUsers[$user->username]);
-                      $isInGroup = $user->group == $group;
+                      $isInGroup = $user->group == $group;                      
                       if(!$hasSubmitted && $isInGroup) {
                       $count++;
                       ?>

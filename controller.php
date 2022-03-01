@@ -85,6 +85,8 @@ switch (strtolower($action)) {
     $pageTitle = "Submissions for " . $group . " in section " . $sectionInfo->section_title;
     $groups = $course->listAllGradingGroupMembers($section);
     $users = getAllUsers($groups);
+    $orphans = $course->getOrphans($section);
+    $users = array_merge($orphans, $users);    
     $files = $course->listFilesOfGroupMembers($section, $group, $assignment);
     $assignments = $course->getSectionAssignments($section, Course::STATUS_ALL);
     break;

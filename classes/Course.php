@@ -676,7 +676,11 @@ class Course {
     $url = 'sections/{section_id}/submissions/{grade_item_id}/{user_id}/revisions?with_attachments=1';
     $url = str_replace('{section_id}', $sectionId, $url);
     $url = str_replace('{grade_item_id}', $assignmentId, $url);
-    $url = str_replace('{user_id}', $member->uid, $url);   
+		if (isset($member->uid))
+			$url = str_replace('{user_id}', $member->uid, $url);   
+		else
+			$url = str_replace('{user_id}', $member->info->uid, $url);   
+			
     $response = $this->api($url, '+10 seconds');
     // check for failing api call
     if (!is_object($response->result)) {
@@ -706,10 +710,27 @@ class Course {
     }
     return $files;
   }
-  
+
+  // list all files of members who are not part of a group (orphans)
+  function listFilesOfOrphans($sectionId, $assignmentId) {
+    // get submissions per member
+    $files = array();
+    $users = $this->getOrphans($sectionId);
+		foreach ($users as $member) {
+		$memberFiles = $this->listFilesOfGroupMember($sectionId, '', $member->info, $assignmentId);
+			$files = array_merge($files, $memberFiles);
+		}
+    return $files;
+  }
+	
   // make an array of submissions
   // of an assignment for each member of the group
   function listFilesOfGroupMembers($sectionId, $groupName, $assignmentId) {
+		if ($groupName=='none') {
+			$files = $this->listFilesOfOrphans($sectionId, $assignmentId);
+			return $files;
+		}
+		
     // get members
     $groups = $this->listGradingGroupMembers($sectionId, $groupName);
 
