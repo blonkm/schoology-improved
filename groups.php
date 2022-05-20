@@ -282,6 +282,14 @@ require_once('controller.php');
     $fileUsers = [];
     $count = count($files);
     $totalSize = 0.0;
+    
+    // stats for list of latest revisions
+    $countLatest = count($latest);
+    $totalLatestSize = 0.0;
+    foreach ($latest as $file) {
+      $totalLatestSize += $file->size;
+    }
+    
     foreach ($files as $file) { 
       $fileUsers[$file->userId] = $file->userId;
       $totalSize += $file->size;
@@ -304,6 +312,8 @@ require_once('controller.php');
                     </table>
                     <p><a href="?section=<?= $section ?>&assignment=<?= $assignment ?>&group=<?= urlencode($group) ?>&action=download">download <?=$count?> files (<?=$totalSize?>MB)</a> 
                         | 
+                        <a href="?section=<?= $section ?>&assignment=<?= $assignment ?>&group=<?= urlencode($group) ?>&action=downloadLatest">download latest (<?=$countLatest?> files - <?=$totalLatestSize?>MB)</a> 
+                        |
                         <a href="?section=<?= $section ?>&assignment=<?= $assignment ?>&action=download">download files of all groups</a> 
                     </p>
                     <h3>Not submitted</h3>

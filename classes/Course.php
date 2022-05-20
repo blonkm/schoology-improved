@@ -88,10 +88,10 @@ class Course {
   }
 
   function setCache($active) {
-      if ($active)
-        $this->enableCache();
-      else
-        $this->disableCache();
+    if ($active)
+      $this->enableCache();
+    else
+      $this->disableCache();
   }
 
   function refreshCache($numRecords) {
@@ -101,7 +101,7 @@ class Course {
     }
     return $records;
   }
-  
+
   function apiCounter() {
     return $this->_apiCallCount;
   }
@@ -120,22 +120,21 @@ class Course {
   function checkApiStatus() {
     // only call once every STATUS_CHECK_PERIOD seconds in order to avoid 
     // the page repeatedly checking for api availability
-    if (time() - $_SESSION['lastApiStatusCheck'] < self::STATUS_CHECK_PERIOD) 
+    if (time() - $_SESSION['lastApiStatusCheck'] < self::STATUS_CHECK_PERIOD)
       return true;
     $url = self::API_URL;
     $timeout = ini_get('default_socket_timeout');
     ini_set('default_socket_timeout', 2);
-    $headers = @get_headers($url);   
+    $headers = @get_headers($url);
     $_SESSION['lastApiStatusCheck'] = time();
-    ini_set('default_socket_timeout', $timeout);    
-    if($headers && strpos( $headers[0], '302')) { // schoology returns 302 normally
+    ini_set('default_socket_timeout', $timeout);
+    if ($headers && strpos($headers[0], '302')) { // schoology returns 302 normally
       return true;
-    } 
-    else { 
+    } else {
       return false;
-    } 
+    }
   }
-  
+
   function api($url, $expires = '+1 year', $method = 'GET') {
     if (@$this->checkApiStatus() == false) {
       if (!$this->hasErrors()) {
@@ -146,7 +145,7 @@ class Course {
     if (!$resource) {
       $schoology = $this->app();
       $this->_timer->throttle();
-      $url = str_replace('//','/',$url);      
+      $url = str_replace('//', '/', $url);
       if ($this->_followRedirects == true)
         $resource = $schoology->apiResult($url, $method);
       else
@@ -167,14 +166,15 @@ class Course {
   public function hasErrors() {
     return count($this->_errors) > 0;
   }
-  
+
   function getFirstError() {
     if ($this->hasErrors()) {
       return $this->_errors[0];
     }
   }
-  
+
   /* show error messages in HTML */
+
   function showErrors() {
     foreach ($this->_errors as $message)
       echo '<p class="error">' . $message . '</p>';
@@ -245,7 +245,7 @@ class Course {
 
     // do the call
     $response = $this->api($url);
-    if (!$response) 
+    if (!$response)
       return false;
     $result = $response->result;
     $assignments = [];
@@ -338,29 +338,29 @@ class Course {
   function getOrphans($sectionId) {
     // get everyone in the course
     $enrollments = $this->getMemberObjects($sectionId);
-    
+
     // get everyone who is in a group (hierarchical groups with members)
     $groups = $this->listAllGradingGroupMembers($sectionId);
-    
+
     // flatten groups to list of members
     $members = [];
-    foreach($groups as $group) {
-      foreach($group->members as $member) {
+    foreach ($groups as $group) {
+      foreach ($group->members as $member) {
         $members[$member->id] = $member;
       }
     }
-    
+
     // loop and find all enrollments not in the member list
     $orphanEnrollments = [];
     foreach ($enrollments as $enrollment) {
       if (!key_exists($enrollment->uid, $members)) {
         $orphanEnrollments[] = $enrollment;
-      }    
+      }
     }
 
     // convert enrollment objects to user objects
     $orphans = [];
-    foreach($orphanEnrollments as $orphan) {
+    foreach ($orphanEnrollments as $orphan) {
       $member = $this->getUserInfo($orphan->uid);
       $user = (object) ([
           'group' => '',
@@ -373,7 +373,7 @@ class Course {
 
     return $orphans;
   }
-  
+
   /**
    *  Convert user ids to enrollment ids
    *  @param lookup an array of schoology user ids
@@ -387,7 +387,7 @@ class Course {
       foreach ($users as $user) {
         if (array_key_exists($user, $lookup))
           $enrollments[(string) $key][] = $lookup[$user];
-        else {          
+        else {
           $userInfo = $this->getUserInfo($user);
           $first = $userInfo->name_first;
           $last = $userInfo->name_last;
@@ -454,7 +454,7 @@ class Course {
     if (empty($import)) {
       throw new Exception('import data empty in createGradingGroups');
     }
-    
+
     // find all members (enrollment ids)
     $memberObjects = $this->getMemberObjects($sectionId);
     foreach ($memberObjects as $member) {
@@ -462,18 +462,20 @@ class Course {
     }
 
     // filter by members who need to be placed in groups (imported)
-    $find_user = function($item) use ($import) { return isset($import[$item]); };
+    $find_user = function ($item) use ($import) {
+      return isset($import[$item]);
+    };
     $users = array_filter($enrollments, $find_user, ARRAY_FILTER_USE_KEY);
 
     $usersWithGroups = [];
     // add the group to enrollment ids
-    foreach ($users as $id=>$user) {
-      $usersWithGroup[] = (object)["id"=>$user, "group"=>$import[$id]];
+    foreach ($users as $id => $user) {
+      $usersWithGroup[] = (object) ["id" => $user, "group" => $import[$id]];
     }
-    
+
     // convert to nested array
-    $groupArray=[];
-    foreach ($usersWithGroup as $key=>$user) {
+    $groupArray = [];
+    foreach ($usersWithGroup as $key => $user) {
       if (!array_key_exists($user->group, $groupArray)) {
         $groupArray[$user->group] = [];
       }
@@ -487,15 +489,15 @@ class Course {
     }
 
     // sort groups by name to make overview in schoology more logical
-    usort($groups,function($group1,$group2){
-        return strcmp($group1->title, $group2->title);
-    });    
+    usort($groups, function ($group1, $group2) {
+      return strcmp($group1->title, $group2->title);
+    });
 
     // call api to add groups with their respective members
     foreach ($groups as $group) {
       $request = (object) $group;
       $json = json_encode($request);
-      
+
       $url = 'sections/{section_id}/grading_groups';
       $url = str_replace('{section_id}', $sectionId, $url);
 
@@ -524,7 +526,7 @@ class Course {
       try {
         $schoology->api($url, 'DELETE');
       } catch (Exception $e) {
-          dump(time() . $e->getMessage());
+        dump(time() . $e->getMessage());
       }
 
       usleep(200 * 1000); // wait 200ms 
@@ -638,7 +640,7 @@ class Course {
     $assignments = $this->getSectionAssignments($sectionId);
     $enrollments = $this->listMembers($sectionId);
     $files = array();
-    
+
     foreach ($assignments as $assignmentId => $assignmentTitle) {
       $url = 'sections/{section_id}/submissions/{grade_item_id}/{user_id}/revisions?with_attachments=1';
       $url = str_replace('{section_id}', $sectionId, $url);
@@ -672,15 +674,15 @@ class Course {
     $files = [];
 //    $groups = $this->listGradingGroupMembers($sectionId, $groupName);
     $enrollments = $this->listMembers($sectionId);
-    
+
     $url = 'sections/{section_id}/submissions/{grade_item_id}/{user_id}/revisions?with_attachments=1';
     $url = str_replace('{section_id}', $sectionId, $url);
     $url = str_replace('{grade_item_id}', $assignmentId, $url);
-		if (isset($member->uid))
-			$url = str_replace('{user_id}', $member->uid, $url);   
-		else
-			$url = str_replace('{user_id}', $member->info->uid, $url);   
-			
+    if (isset($member->uid))
+      $url = str_replace('{user_id}', $member->uid, $url);
+    else
+      $url = str_replace('{user_id}', $member->info->uid, $url);
+
     $response = $this->api($url, '+10 seconds');
     // check for failing api call
     if (!is_object($response->result)) {
@@ -716,21 +718,41 @@ class Course {
     // get submissions per member
     $files = array();
     $users = $this->getOrphans($sectionId);
-		foreach ($users as $member) {
-		$memberFiles = $this->listFilesOfGroupMember($sectionId, '', $member->info, $assignmentId);
-			$files = array_merge($files, $memberFiles);
-		}
+    foreach ($users as $member) {
+      $memberFiles = $this->listFilesOfGroupMember($sectionId, '', $member->info, $assignmentId);
+      $files = array_merge($files, $memberFiles);
+    }
     return $files;
   }
-	
+
+  function listLatestFilesOfGroupMembers($sectionId, $groupName, $assignmentId) {
+    $files = $this->listFilesOfGroupMembers($sectionId, $groupName, $assignmentId);
+    $latest = [];
+    $n = 0;
+    foreach ($files as $index => $file) {
+      if ($n > 0) {
+        // once you go to the next user the previous one is the latest submission
+        if ($files[$n]->userId !== $files[$n - 1]->userId) {
+          $latest[] = $files[$n - 1];
+        }
+        // or the final one is also a latest submission
+        if ($n == count($files) - 1) {
+          $latest[] = $file;
+        }
+      }
+      $n++;
+    }
+    return $latest;
+  }
+
   // make an array of submissions
   // of an assignment for each member of the group
   function listFilesOfGroupMembers($sectionId, $groupName, $assignmentId) {
-		if ($groupName=='none') {
-			$files = $this->listFilesOfOrphans($sectionId, $assignmentId);
-			return $files;
-		}
-		
+    if ($groupName == 'none') {
+      $files = $this->listFilesOfOrphans($sectionId, $assignmentId);
+      return $files;
+    }
+
     // get members
     $groups = $this->listGradingGroupMembers($sectionId, $groupName);
 
@@ -763,12 +785,12 @@ class Course {
     }
     return $filePath;
   }
-  
+
 // save all attachments for a specific group and assignment
   function saveAttachments($files, $assignment) {
     foreach ($files as $file) {
       $this->saveAttachment($file, $assignment);
-    }    
+    }
   }
 
   // save all attachments for a specific user
@@ -861,6 +883,7 @@ class Course {
   }
 
   /* purge all downloads */
+
   function purgeDownloads() {
     $downloadsFolder = realpath('downloads');
     if (!$downloadsFolder)
@@ -883,11 +906,11 @@ class Course {
       $csv = array_map('str_getcsv', file($targetFile));
       return $csv;
     } else {
-      $this->_errors = $uploader->getErrors();     
+      $this->_errors = $uploader->getErrors();
       return [];
     }
   }
-  
+
   /**
    * import a CSV file
    * 

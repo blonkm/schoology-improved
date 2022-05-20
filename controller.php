@@ -34,7 +34,9 @@ switch (strtolower($action)) {
   case 'pictures':
   case 'courses':
     $courses = $course->getCourses();
-    usort($courses, function($c1, $c2) { return strcmp($c1->title, $c2->title); });
+    usort($courses, function ($c1, $c2) {
+      return strcmp($c1->title, $c2->title);
+    });
     $pageTitle = "Select a course from available courses";
     break;
   case 'groups':
@@ -86,8 +88,9 @@ switch (strtolower($action)) {
     $groups = $course->listAllGradingGroupMembers($section);
     $users = getAllUsers($groups);
     $orphans = $course->getOrphans($section);
-    $users = array_merge($orphans, $users);    
+    $users = array_merge($orphans, $users);
     $files = $course->listFilesOfGroupMembers($section, $group, $assignment);
+    $latest = $course->listLatestFilesOfGroupMembers($section, $group, $assignment);
     $assignments = $course->getSectionAssignments($section, Course::STATUS_ALL);
     break;
   case 'create':
@@ -135,6 +138,16 @@ switch (strtolower($action)) {
     if ($course->download($section, null, $assignments[$assignment], $group))
       die(); // no more response, we're downloading a zip file            
     break;
+  case 'downloadlatest':
+    $course->purgeDownloads();
+    $pageTitle = "Downloading only latest submissions of assignment " . $assignment;
+    $latest = $course->listLatestFilesOfGroupMembers($section, $group, $assignment);
+    $assignments = $course->getSectionAssignments($section, Course::STATUS_ALL);
+    $course->saveAttachments($latest, $assignment);
+    $filesSaved = true;
+    if ($course->download($section, null, $assignments[$assignment], $group))
+      die(); // no more response, we're downloading a zip file            
+    break;
   case 'portfolio':
     $assignments = $course->getSectionAssignments($section, Course::STATUS_ALL);
     $member = $course->getUserInfo($userid);
@@ -152,7 +165,7 @@ switch (strtolower($action)) {
   case 'find':
     $groups = $course->listAllGradingGroupMembers($section);
     $users = getAllUsers($groups);
-    $find_user = function($v) use ($userid) {
+    $find_user = function ($v) use ($userid) {
       return strtoupper($v->username) == strtoupper($userid);
     };
     $user = current(array_filter($users, $find_user));
@@ -173,7 +186,7 @@ switch (strtolower($action)) {
     echo "uniqueid,username,group,first,last\n";
     foreach ($users as $user) {
       $out = $user->info->uid . ',' . $user->username . ',' . $user->group . ',' . $user->first_name . ',' . $user->last_name . "\n";
-        echo $out;
+      echo $out;
     }
     die();
     break;
@@ -187,19 +200,19 @@ switch (strtolower($action)) {
       echo $course->getFirstError();
       http_response_code(404);
       die();
-    } 
+    }
     $fileName = $_FILES["file"]["name"];
     ?>
     <h2>Data Preview</h2>
     <p>Here's a preview of your data. Once you are ready to 
       import this data, press the button below</p>
-    <p><a class="button" style="display: inline" href="groups.php?section=<?=$section?>&file=<?=$fileName?>&action=importGroupsData">load data</a></p>
+    <p><a class="button" style="display: inline" href="groups.php?section=<?= $section ?>&file=<?= $fileName ?>&action=importGroupsData">load data</a></p>
     <table>
       <thead>
         <tr>
-            <? foreach ($data[0] as $field) { ?>
+          <? foreach ($data[0] as $field) { ?>
             <th><?= $field ?></th>
-          <? } ?>
+    <? } ?>
         </tr>
       </thead>
       <tbody>
@@ -208,11 +221,11 @@ switch (strtolower($action)) {
           foreach ($data as $row) {
             ?>
           <tr>
-              <? foreach ($row as $item) { ?>
-              <td><?= $item?></td>
-            <? } ?>
+            <? foreach ($row as $item) { ?>
+              <td><?= $item ?></td>
+          <? } ?>
           </tr>
-        <? } ?>
+    <? } ?>
       </tbody>
     </table>
     <?
