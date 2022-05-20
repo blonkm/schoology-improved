@@ -22,7 +22,7 @@ The basic functionality is in a class called 'Course'. You will be able to retri
 ## How to use the project
 
 ### Step 1: prerequisites
-You will need a server capable of running PHP. It will also need CURL, Sqlite3, and ZipArchive enabled, which is available as of PHP 5.2.0. You will also need to request an API code from Schoology support.
+You will need a server capable of running PHP. It will also need CURL, Sqlite3, and ZipArchive enabled, which is available as of PHP 5.2.0. You will also need to request an API code from Schoology support. Settings in php.ini should be a large max_execution_time like 90 seconds, and short_tags should be on. 
 
 ### Step 1: setup folders
 - Download the files from this project (schoology sdk is included)
