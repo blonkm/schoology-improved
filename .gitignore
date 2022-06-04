@@ -4,3 +4,7 @@ config/.api_secret
 api.sqlite
 nbproject/project.properties
 nbproject/project.xml
+/adminer/
+/downloads/
+/xdebug.log
+/classes/xdebug.log

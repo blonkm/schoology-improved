@@ -425,7 +425,7 @@ class SchoologyApi
 
   private function _makeOauthSig( $url = '' , $method = '' , &$oauth_config = '' )
   {
-    $base_string = $this->_makeBaseString( $url , $method , $oauth_config );
+    $base_string = $this->_makeBaseString( $oauth_config, $url , $method );
     $oauth_str = $this->_urlencode($this->_consumer_secret).'&'.$this->_urlencode($this->_token_secret);
     if ($oauth_config['oauth_signature_method'] == 'PLAINTEXT'){
       return $oauth_str;
@@ -441,7 +441,7 @@ class SchoologyApi
     return str_replace('%7E', '~', rawurlencode($s));
   }
 
-  private function _makeBaseString( $url = '' , $method = '' , $oauth_config )
+  private function _makeBaseString( $oauth_config, $url = '' , $method = '' )
   {
     // $url shouldn't include parameters
     if(strpos($url, '?') !== FALSE){

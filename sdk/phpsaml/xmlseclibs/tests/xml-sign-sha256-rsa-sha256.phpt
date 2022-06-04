@@ -1,7 +1,7 @@
 --TEST--
 Signature RSA SHA256
 --SKIPIF--
-<?php if (($php_version[0] == 5) && $php_version[1] < 3)) die('skip'); ?>
+<?php if (($php_version[0] == 5) && $php_version[1] < 3) die('skip'); ?>
 --FILE--
 <?php
 require(dirname(__FILE__) . '/../xmlseclibs.php');
