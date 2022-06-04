@@ -580,10 +580,11 @@ class Course {
     $url = str_replace('{enrollment_id}', $enrollmentId, $url);
     $url = str_replace('{section_id}', $sectionId, $url);
     $response = $this->api($url, '+1 minute');
-    $grades = $response->result?->grades->grade;
+    $grades = $response->result->grades->grade;
 	$grade = '';
     if (isset($grades) && is_array($grades) && count($grades)>0)
-		$grade = $grades[0];
+		if (!is_null($grades[0]->grade))
+			$grade = $grades[0]->grade;
     return $grade;
 
   }
@@ -596,10 +597,10 @@ class Course {
     $url = str_replace('{enrollment_id}', $enrollmentId, $url);
     $url = str_replace('{section_id}', $sectionId, $url);
     $response = $this->api($url, '+1 minute');
-    $grades = $response->result?->grades->grade;
+    $grades = $response->result->grades->grade;
 	$comment = '';
     if (isset($grades) && is_array($grades) && count($grades)>0)
-		$comment = $grades[0];
+		$comment = $grades[0]->comment;
     return $comment;
   }
 
