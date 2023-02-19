@@ -89,14 +89,17 @@ require_once('controller.php');
         
         <!-- 2 -->
         <script src="scripts/dropzone.js"></script>
+        <script src="scripts/tableToCSV.js"></script>
         <script src="scripts/main.js"></script>
-        <script src='scripts/tablesort.min.js'></script>
+        <script src="scripts/tablesort.min.js"></script>
 
         <script src="scripts/awesomplete/awesomplete.min.js"></script>
         
         <!-- Include sort types you need -->
-        <script src='scripts/sorts/tablesort.number.min.js'></script>
-        <script src='scripts/sorts/tablesort.date.min.js'></script>       
+        <script src="scripts/sorts/tablesort.number.min.js"></script>
+        <script src="scripts/sorts/tablesort.date.min.js"></script>       
+
+
     </head>
     <body>
         <header>&nbsp;</header>
@@ -155,7 +158,7 @@ require_once('controller.php');
                           case 'list':
                           case 'attendance':
                             ?>
-                    <table class="sortedTable">
+                    <table class="sortedTable" id="users">
                       <thead>
                         <tr>
                     <? if ($action == 'pictures' or $action == 'groups') { ?>
@@ -200,7 +203,10 @@ require_once('controller.php');
                             }
                             ?>
                       </tbody>
-                    </table><?
+                    </table>                    
+                    
+                    <p><button id="export">Export</button></p>
+                    <?
                         break;
                       case 'matrix':
                         $c = new Course();
